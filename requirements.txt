@@ -1,4 +1,10 @@
+# Üye 1 & 2 — Kamera ve Jest Tanıma
 opencv-python
 mediapipe
-pyautogui
+
+# Üye 3 — Sistem Entegrasyonu & Komutlar
+pyautogui>=0.9.54
+keyboard>=0.13.5
+
+# Üye 4 — Web Arayüzü
 flask
