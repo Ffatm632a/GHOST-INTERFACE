@@ -39,6 +39,13 @@ class HandDetector:
         self.last_landmarks_normalized = []
 
     def find_hands(self, frame, draw=True):
+        # Risk R-03: Işık normalleştirmesi
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        brightness = gray.mean()
+        if brightness < 80:
+            frame = cv2.convertScaleAbs(frame, alpha=1.5, beta=30)
+        elif brightness > 180:
+            frame = cv2.convertScaleAbs(frame, alpha=0.7, beta=-20)
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
         result = self.detector.detect(mp_image)
