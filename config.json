@@ -1,1 +1,14 @@
-
+{
+  "gestures": {
+    "open_palm":  "mouse_move",
+    "fist":       "left_click",
+    "thumb_up":   "volume_up",
+    "thumb_down": "volume_down",
+    "pinch_out":  "zoom_in",
+    "pinch_in":   "zoom_out",
+    "fist_open":  "open_app"
+  },
+  "app_to_open": "notepad",
+  "volume_step": 5,
+  "zoom_step": 0.1
+}
