@@ -3,22 +3,28 @@ import mediapipe as mp
 from mediapipe.tasks import python as mp_python
 from mediapipe.tasks.python import vision
 import os
+import urllib.request
 
 MODEL_PATH = "hand_landmarker.task"
 
-# El bağlantıları - hangi noktalar birbirine çizgi ile bağlanacak
 HAND_CONNECTIONS = [
-    (0,1),(1,2),(2,3),(3,4),        # baş parmak
-    (0,5),(5,6),(6,7),(7,8),        # işaret parmağı
-    (0,9),(9,10),(10,11),(11,12),   # orta parmak
-    (0,13),(13,14),(14,15),(15,16), # yüzük parmağı
-    (0,17),(17,18),(18,19),(19,20), # serçe
-    (5,9),(9,13),(13,17)            # avuç içi
+    (0,1),(1,2),(2,3),(3,4),
+    (0,5),(5,6),(6,7),(7,8),
+    (0,9),(9,10),(10,11),(11,12),
+    (0,13),(13,14),(14,15),(15,16),
+    (0,17),(17,18),(18,19),(19,20),
+    (5,9),(9,13),(13,17)
 ]
 
 class HandDetector:
 
     def __init__(self):
+        if not os.path.exists(MODEL_PATH):
+            print("Model indiriliyor, bekle...")
+            url = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
+            urllib.request.urlretrieve(url, MODEL_PATH)
+            print("Model indirildi!")
+
         base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
         options = vision.HandLandmarkerOptions(
             base_options=base_options,
@@ -47,14 +53,12 @@ class HandDetector:
                 self.last_landmarks.append((idx, cx, cy))
 
             if draw:
-                # Bağlantı çizgilerini çiz
                 for start_idx, end_idx in HAND_CONNECTIONS:
                     start = self.last_landmarks[start_idx]
                     end = self.last_landmarks[end_idx]
                     cv2.line(frame, (start[1], start[2]), (end[1], end[2]),
                             (0, 255, 0), 2)
 
-                # Landmark noktalarını çiz
                 for (idx, cx, cy) in self.last_landmarks:
                     cv2.circle(frame, (cx, cy), 5, (255, 0, 255), -1)
 
