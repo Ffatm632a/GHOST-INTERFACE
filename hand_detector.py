@@ -100,6 +100,16 @@ if __name__ == "__main__":
         if landmarks:
             cv2.putText(frame, f"El tespit edildi! Nokta: {len(landmarks)}",
                        (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            
+            # İşaret parmağı ucu (landmark 8)
+            tip = landmarks[8]
+            cv2.putText(frame, f"Isaret parmagi: x={tip.x:.2f} y={tip.y:.2f}",
+                        (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+            
+            # Baş parmak ucu (landmark 4)
+            thumb = landmarks[4]
+            cv2.putText(frame, f"Bas parmak: x={thumb.x:.2f} y={thumb.y:.2f}",
+               (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
         else:
             cv2.putText(frame, "El bulunamadi - elini goster",
                        (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
