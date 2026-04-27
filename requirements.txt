@@ -1,21 +1,36 @@
 # ============================================================
-# Ghost Interface — Bağımlılık Listesi (Sprint 3 Senkronize)
-# Tüm üyelerin bağımlılıkları tek bir dosyada birleştirilmiştir.
+# Ghost Interface — Bağımlılık Listesi / Dependency List
+# (Sprint 3 — Tüm Üyeler Senkronize / All Members Synced)
+#
+# TR: Bu dosya projenin çalışması için gerekli tüm kütüphaneleri listeler.
+#     Başka bir bilgisayarda çalıştırmak için: pip install -r requirements.txt
+#
+# EN: This file lists all libraries needed to run the project.
+#     To run on another computer: pip install -r requirements.txt
 # ============================================================
 
-# Üye 1 (Zeynep) — Kamera ve El Tespiti
+# ── Üye 1 (Zeynep) — Kamera ve El Tespiti ───────────────────
+# TR: Webcam'den görüntü almak ve elde 21 nokta tespit etmek için
+# EN: For capturing webcam feed and detecting 21 hand landmarks
 opencv-python>=4.13.0
 mediapipe>=0.10.33
 
-# Üye 2 (Ceylin) — Jest Tanıma Motoru
-# math modülü Python built-in, ek paket gerekmez.
+# ── Üye 2 (Ceylin) — Jest Tanıma Motoru ─────────────────────
+# TR: math modülü Python'da yerleşik, ek paket gerekmez
+# EN: math module is built-in Python, no extra package needed
 
-# Üye 3 (Dilara) — Sistem Entegrasyonu & Komutlar
+# ── Üye 3 (Dilara) — Sistem Entegrasyonu & Komutlar ─────────
+# TR: Fare/klavye kontrolü ve klavye tuşu simülasyonu için
+# EN: For mouse/keyboard control and keyboard key simulation
 pyautogui>=0.9.54
 keyboard>=0.13.5
 
-# Üye 4 (Elif-Rümeysa) — Web Arayüzü
+# ── Üye 4 (Elif-Rümeysa) — Web Arayüzü ─────────────────────
+# TR: Web sunucusu kurmak için (tarayıcıda arayüz göstermek)
+# EN: For setting up a web server (displaying UI in browser)
 flask
 
-# Test Araçları
+# ── Test Araçları / Testing Tools ────────────────────────────
+# TR: Birim testleri çalıştırmak için: python -m pytest tests/ -v
+# EN: To run unit tests: python -m pytest tests/ -v
 pytest>=7.0
