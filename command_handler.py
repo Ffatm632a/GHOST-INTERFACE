@@ -1,8 +1,16 @@
 # ============================================================
 # command_handler.py
 # Ghost Interface Projesi — Görev 3: Sistem Entegrasyonu
-# Sorumlu: Üye 3
+# Sorumlu: Üye 3 (Dilara)
 # Açıklama: Jest adlarını alıp bilgisayar komutlarına çevirir.
+#
+# ── Entegrasyon Notu (Sprint 2 Uyumu) ──────────────────────
+# Üye 2 (Ceylin) — gesture_engine.py — jest adlarını BÜYÜK
+# HARF döndürmektedir (ör: "OPEN_PALM", "FIST", "POINTING_UP").
+# execute() metoduna .lower().strip() normalizasyonu eklenmiştir.
+# Bu "Defensive Programming" (savunmacı programlama) prensibidir:
+# kendi modülün girişini sen denetlersin, başkasına körü körüne
+# güvenmezsin. config.json her zaman küçük harf tutar.
 # ============================================================
 
 import pyautogui          # Fare ve klavye kontrolü için
@@ -88,7 +96,24 @@ class CommandHandler:
 
         Performans: her komut 100ms altında tamamlanmalıdır.
         Sistem güvenliği: bilinmeyen jest gelirse sessizce geçilir.
+
+        ── Uyumluluk Katmanı (Sprint 2) ────────────────────────
+        Üye 2 (Ceylin / gesture_engine.py) jest adlarını BÜYÜK
+        HARF döndürmektedir. Burada normalize ediyoruz:
+          "OPEN_PALM" → "open_palm"  (config.json ile uyumlu)
+          "FIST"      → "fist"
+        Bu sayede config.json değişmez, her modül kendi formatında
+        çalışabilir ve entegrasyon sorunsuz olur.
         """
+        # ── GİRİŞ NORMALİZASYONU ────────────────────────────
+        # Gelen jest adını küçük harfe çevir ve baş/sondaki boşlukları temizle.
+        # Üye 2'nin "OPEN_PALM" gönderdiğini, Üye 4'ün "open_palm " gönderdiğini
+        # varsayabiliriz — hepsini aynı formata getiriyoruz.
+        if gesture_name is None:
+            logger.debug("execute(): gesture_name None geldi, atlanıyor.")
+            return
+        gesture_name = gesture_name.strip().lower()   # "OPEN_PALM" → "open_palm"
+
         # Config'den jest → komut adını bul
         command_name = self.config["gestures"].get(gesture_name)
 

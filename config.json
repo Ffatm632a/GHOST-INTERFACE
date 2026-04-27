@@ -1,14 +1,21 @@
 {
+  "_comment": "Ghost Interface — Komut Haritası (Sprint 2 Güncellemesi)",
+  "_integration_note": "Tüm jest anahtarları küçük harftir. execute() metodundaki .lower() normalizasyonu sayesinde Üye 2 (Ceylin) BÜYÜK HARF gönderse de doğru eşleşme sağlanır.",
+
   "gestures": {
-    "open_palm":  "mouse_move",
-    "fist":       "left_click",
-    "thumb_up":   "volume_up",
-    "thumb_down": "volume_down",
-    "pinch_out":  "zoom_in",
-    "pinch_in":   "zoom_out",
-    "fist_open":  "open_app"
+    "open_palm":   "mouse_move",
+    "fist":        "left_click",
+    "thumb_up":    "volume_up",
+    "thumb_down":  "volume_down",
+    "pinch_out":   "zoom_in",
+    "pinch_in":    "zoom_out",
+    "fist_open":   "open_app",
+
+    "pointing_up": "left_click"
   },
+
   "app_to_open": "notepad",
   "volume_step": 5,
   "zoom_step": 0.1
 }
+

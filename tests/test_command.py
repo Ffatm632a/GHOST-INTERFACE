@@ -162,25 +162,25 @@ class TestCommandHandler(unittest.TestCase):
 class TestCommandHandlerIntegration(unittest.TestCase):
     """
     Entegrasyon düzeyi testler.
-    Üye 2'nin gesture_engine.py'sinden gelecek veri formatı simüle edilir.
+    Üye 2'nin (Ceylin) gesture_engine.py'sinden gelecek gerçek veri
+    formatı simüle edilir. Sprint 2 uyumluluk testleri burada yapılır.
     """
 
     def setUp(self):
         """Her testten önce handler oluştur."""
         self.handler = CommandHandler()
 
+    # ── Eski Format Testleri (küçük harf) ────────────────────
     @patch("pyautogui.hotkey")
     def test_gesture_engine_format_zoom_in(self, mock_hotkey):
         """
-        Üye 2'den gelen tam veri formatıyla zoom in testi.
+        Küçük harfli jest adıyla zoom in testi (geriye dönük uyumluluk).
         """
-        # gesture_engine.py tarafından dönen örnek veri formatı
         gesture_result = {
             "gesture": "pinch_out",
             "confidence": 0.95,
             "hand_coords": {"x": 0.45, "y": 0.30}
         }
-        # Entegrasyon kullanım şekli (main.py'deki gibi)
         self.handler.execute(
             gesture_result["gesture"],
             gesture_result["hand_coords"]
@@ -190,7 +190,7 @@ class TestCommandHandlerIntegration(unittest.TestCase):
     @patch("pyautogui.moveTo")
     def test_gesture_engine_format_mouse_move(self, mock_move):
         """
-        Üye 2'den gelen tam veri formatıyla fare hareketi testi.
+        Küçük harfli jest adıyla fare hareketi testi (geriye dönük uyumluluk).
         """
         gesture_result = {
             "gesture": "open_palm",
@@ -202,6 +202,87 @@ class TestCommandHandlerIntegration(unittest.TestCase):
             gesture_result["hand_coords"]
         )
         mock_move.assert_called_once()
+
+    # ── Sprint 2: Üye 2 (Ceylin) Gerçek Format Testleri ─────
+    # Ceylin'in gesture_engine.py'si jest adlarını BÜYÜK HARF döndürüyor.
+    # execute() içindeki .lower() normalizasyonu bunu handle etmeli.
+
+    @patch("pyautogui.moveTo")
+    def test_ceylin_uppercase_open_palm(self, mock_move):
+        """
+        Sprint 2 Entegrasyon Testi:
+        Ceylin'den gelen 'OPEN_PALM' (BÜYÜK HARF) normalize edilip
+        fare hareketi komutunu tetiklemeli.
+        """
+        # Ceylin'in gesture_engine.py'sinin GERÇEK çıktı formatı
+        gesture_result = {
+            "gesture": "OPEN_PALM",        # Ceylin bunu döndürüyor
+            "confidence": 0.92,
+            "hand_coords": {"x": 0.5, "y": 0.4}
+        }
+        self.handler.execute(
+            gesture_result["gesture"],
+            gesture_result["hand_coords"]
+        )
+        # .lower() normalizasyonu çalışmalı: OPEN_PALM → open_palm → mouse_move
+        mock_move.assert_called_once()
+
+    @patch("pyautogui.click")
+    def test_ceylin_uppercase_fist(self, mock_click):
+        """
+        Sprint 2 Entegrasyon Testi:
+        Ceylin'den gelen 'FIST' (BÜYÜK HARF) normalize edilip
+        sol tıklama komutunu tetiklemeli.
+        """
+        gesture_result = {
+            "gesture": "FIST",             # Ceylin bunu döndürüyor
+            "confidence": 0.97,
+            "hand_coords": None
+        }
+        self.handler.execute(gesture_result["gesture"])
+        # FIST → fist → left_click → pyautogui.click()
+        mock_click.assert_called_once()
+
+    @patch("pyautogui.click")
+    def test_ceylin_pointing_up_gesture(self, mock_click):
+        """
+        Sprint 2 Entegrasyon Testi:
+        Ceylin'in yeni 'POINTING_UP' jesti config.json'da tanımlı olmalı
+        ve left_click komutunu tetiklemeli.
+        """
+        gesture_result = {
+            "gesture": "POINTING_UP",      # Ceylin'de tanımlı, bizde de config'e eklendi
+            "confidence": 0.85,
+            "hand_coords": None
+        }
+        self.handler.execute(gesture_result["gesture"])
+        # POINTING_UP → pointing_up → left_click → pyautogui.click()
+        mock_click.assert_called_once()
+
+    def test_ceylin_unknown_gesture_no_crash(self):
+        """
+        Sprint 2 Entegrasyon Testi:
+        Ceylin'den 'UNKNOWN' geldiğinde (tanımsız jest) sistem çökmemeli.
+        Bu gesture_engine.py'nin dönebileceği bir değer.
+        """
+        try:
+            self.handler.execute("UNKNOWN")
+            self.handler.execute("unknown")
+        except Exception as e:
+            self.fail(f"UNKNOWN jest exception fırlattı: {e}")
+
+    def test_normalization_strips_whitespace(self):
+        """
+        Normalizasyon Testi:
+        Başında/sonunda boşluk olan jest adları da doğru çalışmalı.
+        Örneğin: ' FIST ' veya 'open_palm  '
+        """
+        # Bu testler exception fırlatmamalı (komut bulunamasa bile)
+        try:
+            self.handler.execute("  FIST  ")
+            self.handler.execute("  open_palm  ")
+        except Exception as e:
+            self.fail(f"Boşluklu jest adı exception fırlattı: {e}")
 
 
 if __name__ == "__main__":
