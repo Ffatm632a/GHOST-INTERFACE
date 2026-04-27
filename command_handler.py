@@ -4,13 +4,15 @@
 # Sorumlu: Üye 3 (Dilara)
 # Açıklama: Jest adlarını alıp bilgisayar komutlarına çevirir.
 #
-# ── Entegrasyon Notu (Sprint 2 Uyumu) ──────────────────────
-# Üye 2 (Ceylin) — gesture_engine.py — jest adlarını BÜYÜK
-# HARF döndürmektedir (ör: "OPEN_PALM", "FIST", "POINTING_UP").
-# execute() metoduna .lower().strip() normalizasyonu eklenmiştir.
-# Bu "Defensive Programming" (savunmacı programlama) prensibidir:
-# kendi modülün girişini sen denetlersin, başkasına körü körüne
-# güvenmezsin. config.json her zaman küçük harf tutar.
+# ── Entegrasyon Notu (Sprint 2 → Sprint 3 Uyumu) ──────────────
+# Üye 1 (Zeynep) — capture.py + hand_detector.py TAMAMLANDI.
+#   → Kamera açma, MediaPipe ile el tespiti, ışık normalleştirme.
+# Üye 2 (Ceylin) — gesture_engine.py Sprint 2'de güncellendi:
+#   → Artık dictionary döndürüyor: {"gesture": "open_palm", ...}
+#   → Jest adları artık küçük harf (önceki Sprint 1'de BÜYÜK idi).
+# execute() metodunda .lower().strip() normalizasyonu savunmacı
+# katman olarak korunmaktadır (Defensive Programming prensibi).
+# config.json her zaman küçük harf tutar.
 # ============================================================
 
 import pyautogui          # Fare ve klavye kontrolü için
@@ -97,13 +99,13 @@ class CommandHandler:
         Performans: her komut 100ms altında tamamlanmalıdır.
         Sistem güvenliği: bilinmeyen jest gelirse sessizce geçilir.
 
-        ── Uyumluluk Katmanı (Sprint 2) ────────────────────────
-        Üye 2 (Ceylin / gesture_engine.py) jest adlarını BÜYÜK
-        HARF döndürmektedir. Burada normalize ediyoruz:
-          "OPEN_PALM" → "open_palm"  (config.json ile uyumlu)
-          "FIST"      → "fist"
-        Bu sayede config.json değişmez, her modül kendi formatında
-        çalışabilir ve entegrasyon sorunsuz olur.
+        ── Uyumluluk Katmanı (Sprint 3 Güncel) ────────────────────
+        Ceylin Sprint 2'de gesture_engine.py'yi güncelledi:
+          → Artık küçük harf döndürüyor: "open_palm", "fist", vb.
+          → Dictionary formatı: {"gesture": "...", "hand_coords": {...}}
+        .lower().strip() normalizasyonu savunmacı katman olarak
+        korunmaktadır — gelecekte format değişse bile sistem çalışır.
+        Kullanım: handler.execute(result["gesture"], result["hand_coords"])
         """
         # ── GİRİŞ NORMALİZASYONU ────────────────────────────
         # Gelen jest adını küçük harfe çevir ve baş/sondaki boşlukları temizle.

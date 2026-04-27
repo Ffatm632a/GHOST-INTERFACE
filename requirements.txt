@@ -1,10 +1,21 @@
-# Üye 1 & 2 — Kamera ve Jest Tanıma
-opencv-python
-mediapipe
+# ============================================================
+# Ghost Interface — Bağımlılık Listesi (Sprint 3 Senkronize)
+# Tüm üyelerin bağımlılıkları tek bir dosyada birleştirilmiştir.
+# ============================================================
 
-# Üye 3 — Sistem Entegrasyonu & Komutlar
+# Üye 1 (Zeynep) — Kamera ve El Tespiti
+opencv-python>=4.13.0
+mediapipe>=0.10.33
+
+# Üye 2 (Ceylin) — Jest Tanıma Motoru
+# math modülü Python built-in, ek paket gerekmez.
+
+# Üye 3 (Dilara) — Sistem Entegrasyonu & Komutlar
 pyautogui>=0.9.54
 keyboard>=0.13.5
 
-# Üye 4 — Web Arayüzü
+# Üye 4 (Elif-Rümeysa) — Web Arayüzü
 flask
+
+# Test Araçları
+pytest>=7.0

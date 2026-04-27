@@ -163,14 +163,19 @@ class TestCommandHandlerIntegration(unittest.TestCase):
     """
     Entegrasyon düzeyi testler.
     Üye 2'nin (Ceylin) gesture_engine.py'sinden gelecek gerçek veri
-    formatı simüle edilir. Sprint 2 uyumluluk testleri burada yapılır.
+    formatı simüle edilir.
+
+    ── Versiyon Geçmişi ──────────────────────────────────────
+    Sprint 2: Ceylin BÜYÜK HARF döndürüyordu → .lower() ile çözdük
+    Sprint 3: Ceylin küçük harf + dictionary formatına geçti
+              Eski testler geriye dönük uyumluluk için korundu
     """
 
     def setUp(self):
         """Her testten önce handler oluştur."""
         self.handler = CommandHandler()
 
-    # ── Eski Format Testleri (küçük harf) ────────────────────
+    # ── Geriye Dönük Uyumluluk Testleri (küçük harf string) ──
     @patch("pyautogui.hotkey")
     def test_gesture_engine_format_zoom_in(self, mock_hotkey):
         """
@@ -203,20 +208,18 @@ class TestCommandHandlerIntegration(unittest.TestCase):
         )
         mock_move.assert_called_once()
 
-    # ── Sprint 2: Üye 2 (Ceylin) Gerçek Format Testleri ─────
-    # Ceylin'in gesture_engine.py'si jest adlarını BÜYÜK HARF döndürüyor.
-    # execute() içindeki .lower() normalizasyonu bunu handle etmeli.
+    # ── BÜYÜK HARF Savunmacı Testler (.lower() katmanı) ─────
+    # Ceylin artık küçük harf gönderiyor ama .lower() normalizasyonu
+    # gelecekte format değişirse sistemi korur. Bu testler savunmacı
+    # katmanın çalıştığını doğruluyor.
 
     @patch("pyautogui.moveTo")
-    def test_ceylin_uppercase_open_palm(self, mock_move):
+    def test_uppercase_open_palm_defensive(self, mock_move):
         """
-        Sprint 2 Entegrasyon Testi:
-        Ceylin'den gelen 'OPEN_PALM' (BÜYÜK HARF) normalize edilip
-        fare hareketi komutunu tetiklemeli.
+        Savunmacı Test: BÜYÜK HARF gelse bile .lower() ile çalışmalı.
         """
-        # Ceylin'in gesture_engine.py'sinin GERÇEK çıktı formatı
         gesture_result = {
-            "gesture": "OPEN_PALM",        # Ceylin bunu döndürüyor
+            "gesture": "OPEN_PALM",
             "confidence": 0.92,
             "hand_coords": {"x": 0.5, "y": 0.4}
         }
@@ -224,46 +227,27 @@ class TestCommandHandlerIntegration(unittest.TestCase):
             gesture_result["gesture"],
             gesture_result["hand_coords"]
         )
-        # .lower() normalizasyonu çalışmalı: OPEN_PALM → open_palm → mouse_move
         mock_move.assert_called_once()
 
     @patch("pyautogui.click")
-    def test_ceylin_uppercase_fist(self, mock_click):
+    def test_uppercase_fist_defensive(self, mock_click):
         """
-        Sprint 2 Entegrasyon Testi:
-        Ceylin'den gelen 'FIST' (BÜYÜK HARF) normalize edilip
-        sol tıklama komutunu tetiklemeli.
+        Savunmacı Test: BÜYÜK HARF 'FIST' gelse bile sol tıklama çalışmalı.
         """
-        gesture_result = {
-            "gesture": "FIST",             # Ceylin bunu döndürüyor
-            "confidence": 0.97,
-            "hand_coords": None
-        }
-        self.handler.execute(gesture_result["gesture"])
-        # FIST → fist → left_click → pyautogui.click()
+        self.handler.execute("FIST")
         mock_click.assert_called_once()
 
     @patch("pyautogui.click")
-    def test_ceylin_pointing_up_gesture(self, mock_click):
-        """
-        Sprint 2 Entegrasyon Testi:
-        Ceylin'in yeni 'POINTING_UP' jesti config.json'da tanımlı olmalı
-        ve left_click komutunu tetiklemeli.
-        """
-        gesture_result = {
-            "gesture": "POINTING_UP",      # Ceylin'de tanımlı, bizde de config'e eklendi
-            "confidence": 0.85,
-            "hand_coords": None
-        }
-        self.handler.execute(gesture_result["gesture"])
-        # POINTING_UP → pointing_up → left_click → pyautogui.click()
-        mock_click.assert_called_once()
+    def test_pointing_up_both_cases(self, mock_click):
+        """pointing_up hem küçük hem büyük harfle çalışmalı."""
+        self.handler.execute("POINTING_UP")
+        self.handler.execute("pointing_up")
+        self.assertEqual(mock_click.call_count, 2)
 
-    def test_ceylin_unknown_gesture_no_crash(self):
+    def test_unknown_gesture_no_crash(self):
         """
-        Sprint 2 Entegrasyon Testi:
-        Ceylin'den 'UNKNOWN' geldiğinde (tanımsız jest) sistem çökmemeli.
-        Bu gesture_engine.py'nin dönebileceği bir değer.
+        Tanımsız jest geldiğinde sistem çökmemeli.
+        Ceylin'in gesture_engine.py'si tanıyamadığı jestlerde 'unknown' döndürüyor.
         """
         try:
             self.handler.execute("UNKNOWN")
@@ -272,12 +256,7 @@ class TestCommandHandlerIntegration(unittest.TestCase):
             self.fail(f"UNKNOWN jest exception fırlattı: {e}")
 
     def test_normalization_strips_whitespace(self):
-        """
-        Normalizasyon Testi:
-        Başında/sonunda boşluk olan jest adları da doğru çalışmalı.
-        Örneğin: ' FIST ' veya 'open_palm  '
-        """
-        # Bu testler exception fırlatmamalı (komut bulunamasa bile)
+        """Başında/sonunda boşluk olan jest adları da doğru çalışmalı."""
         try:
             self.handler.execute("  FIST  ")
             self.handler.execute("  open_palm  ")
@@ -285,6 +264,194 @@ class TestCommandHandlerIntegration(unittest.TestCase):
             self.fail(f"Boşluklu jest adı exception fırlattı: {e}")
 
 
+class TestSprintThreeFullPipeline(unittest.TestCase):
+    """
+    ════════════════════════════════════════════════════════════
+    Sprint 3 — Tam Pipeline Entegrasyon Testleri
+    ════════════════════════════════════════════════════════════
+    Bu test sınıfı, Ceylin'in Sprint 2 sonrası gesture_engine.py'sinin
+    GERÇEK çıktı formatını birebir simüle eder.
+
+    Ceylin'in detect_gesture() artık şu formatı döndürüyor:
+        {
+            "gesture": "open_palm",        # küçük harf (str)
+            "confidence": 1.0,             # float
+            "hand_coords": {"x": 0.5, "y": 0.3}  # dict veya None
+        }
+
+    Zeynep'in hand_detector.py → Ceylin'in gesture_engine.py →
+    Dilara'nın command_handler.py zinciri burada uçtan uca test ediliyor.
+    """
+
+    def setUp(self):
+        """Her testten önce temiz handler."""
+        self.handler = CommandHandler()
+
+    # ── UC-01: Fare Hareketi (Açık Avuç) ─────────────────────
+    @patch("pyautogui.moveTo")
+    def test_pipeline_open_palm_mouse_move(self, mock_move):
+        """
+        Tam Pipeline: Ceylin 'open_palm' → handler → pyautogui.moveTo()
+        Zeynep'in hand_detector'ından normalize koordinat geliyor.
+        """
+        ceylin_output = {
+            "gesture": "open_palm",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.45, "y": 0.30}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_move.assert_called_once()
+
+    # ── UC-02: Sol Tıklama (Yumruk) ──────────────────────────
+    @patch("pyautogui.click")
+    def test_pipeline_fist_left_click(self, mock_click):
+        """Tam Pipeline: Ceylin 'fist' → handler → pyautogui.click()"""
+        ceylin_output = {
+            "gesture": "fist",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.5, "y": 0.5}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_click.assert_called_once()
+
+    # ── UC-02b: Sol Tıklama (İşaret Parmağı) ─────────────────
+    @patch("pyautogui.click")
+    def test_pipeline_pointing_up_left_click(self, mock_click):
+        """Tam Pipeline: Ceylin 'pointing_up' → handler → pyautogui.click()"""
+        ceylin_output = {
+            "gesture": "pointing_up",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.6, "y": 0.4}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_click.assert_called_once()
+
+    # ── UC-03: Ses Artırma (Baş Parmak Yukarı) ───────────────
+    @patch("keyboard.send")
+    def test_pipeline_thumb_up_volume_up(self, mock_send):
+        """Tam Pipeline: Ceylin 'thumb_up' → handler → keyboard.send('volume up')"""
+        self.handler.os_name = "Windows"
+        ceylin_output = {
+            "gesture": "thumb_up",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.5, "y": 0.2}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        self.assertEqual(mock_send.call_count, 5)  # volume_step=5
+
+    # ── UC-04: Ses Azaltma (Baş Parmak Aşağı) ────────────────
+    @patch("keyboard.send")
+    def test_pipeline_thumb_down_volume_down(self, mock_send):
+        """Tam Pipeline: Ceylin 'thumb_down' → handler → keyboard.send('volume down')"""
+        self.handler.os_name = "Windows"
+        ceylin_output = {
+            "gesture": "thumb_down",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.5, "y": 0.8}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        self.assertEqual(mock_send.call_count, 5)
+
+    # ── UC-05: Zoom In (Parmak Açma) ─────────────────────────
+    @patch("pyautogui.hotkey")
+    def test_pipeline_pinch_out_zoom_in(self, mock_hotkey):
+        """Tam Pipeline: Ceylin 'pinch_out' → handler → Ctrl+Plus"""
+        ceylin_output = {
+            "gesture": "pinch_out",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.5, "y": 0.5}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_hotkey.assert_called_with("ctrl", "+")
+
+    # ── UC-06: Zoom Out (Parmak Kapama) ──────────────────────
+    @patch("pyautogui.hotkey")
+    def test_pipeline_pinch_in_zoom_out(self, mock_hotkey):
+        """Tam Pipeline: Ceylin 'pinch_in' → handler → Ctrl+Minus"""
+        ceylin_output = {
+            "gesture": "pinch_in",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.5, "y": 0.5}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_hotkey.assert_called_with("ctrl", "-")
+
+    # ── UC-07: Uygulama Aç (Yumruk Açma) ─────────────────────
+    @patch("subprocess.Popen")
+    def test_pipeline_fist_open_app(self, mock_popen):
+        """Tam Pipeline: Ceylin 'fist_open' → handler → subprocess.Popen('notepad')"""
+        ceylin_output = {
+            "gesture": "fist_open",
+            "confidence": 1.0,
+            "hand_coords": {"x": 0.5, "y": 0.5}
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_popen.assert_called_once()
+
+    # ── Tanımsız Jest (Sessiz Geçiş) ─────────────────────────
+    def test_pipeline_unknown_gesture_silent(self):
+        """
+        Tam Pipeline: Ceylin tanıyamadığı jestlerde 'unknown' döndürür.
+        Handler bu değeri config'de bulamaz, sessizce geçer.
+        Sistem çökmez, hata vermez.
+        """
+        ceylin_output = {
+            "gesture": "unknown",
+            "confidence": 0.0,
+            "hand_coords": None
+        }
+        try:
+            self.handler.execute(
+                ceylin_output["gesture"],
+                ceylin_output["hand_coords"]
+            )
+        except Exception as e:
+            self.fail(f"Pipeline 'unknown' jest ile çöktü: {e}")
+
+    # ── None Koordinat Güvenliği ──────────────────────────────
+    @patch("pyautogui.click")
+    def test_pipeline_none_coords_safe(self, mock_click):
+        """
+        Ceylin bazen hand_coords=None gönderebilir (el kaybolduğunda).
+        Sistem çökmemeli.
+        """
+        ceylin_output = {
+            "gesture": "fist",
+            "confidence": 1.0,
+            "hand_coords": None
+        }
+        self.handler.execute(
+            ceylin_output["gesture"],
+            ceylin_output["hand_coords"]
+        )
+        mock_click.assert_called_once()
+
+
 if __name__ == "__main__":
     # Testleri verbosity=2 ile çalıştır — her test adı görünsün
     unittest.main(verbosity=2)
+
