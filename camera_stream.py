@@ -35,7 +35,7 @@ class CameraStream:
 
                 frame = cv2.flip(frame, 1)
                 frame = self.detector.find_hands(frame, draw=True)
-                landmarks = self.detector.get_landmark_positions(frame)
+                landmarks = self.detector.get_landmark_positions()
 
                 self.frame_count += 1
                 self.last_landmark_count = len(landmarks)
