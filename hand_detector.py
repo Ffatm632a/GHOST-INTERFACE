@@ -74,19 +74,22 @@ class HandDetector:
 
         return frame
 
-    def get_landmark_positions(self, frame):
+    def get_landmark_positions(self, frame=None):
         """
         Ceylin'in GestureEngine'i ile uyumlu format.
         landmarks[4].x ve landmarks[4].y şeklinde erişilebilir.
         """
         return self.last_landmarks_normalized
 
-    def get_pixel_positions(self, frame):
+    def get_pixel_positions(self, frame=None):
         """
         Piksel koordinatları - çizim ve debug için.
         Her eleman: (idx, cx, cy)
         """
         return self.last_landmarks
+
+    def close(self):
+        self.detector.close()
 
 
 if __name__ == "__main__":
