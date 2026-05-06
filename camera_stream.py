@@ -24,10 +24,11 @@ class CameraStream:
 
         cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
-        self.detector = HandDetector()
-        self.started_at = time.time()
 
         try:
+            self.detector = HandDetector()
+            self.started_at = time.time()
+
             while True:
                 success, frame = cap.read()
                 if not success:
