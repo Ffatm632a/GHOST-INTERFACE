@@ -1,22 +1,34 @@
-# Ghost Interface — Modül 3: Sistem Entegrasyonu & Komutlar
+# 👻 GHOST-INTERFACE
 
-> **Sorumlu:** Üye 3 (Dilara)  
-> **Branch:** `Dilara`  
-> **Repo:** [GHOST-INTERFACE](https://github.com/Ffatm632a/GHOST-INTERFACE)
+Bu proje, yapay zeka ve görüntü işleme tekniklerini kullanarak bilgisayar sistemlerini el hareketleriyle (temassız) kontrol etmeyi amaçlayan bir arayüz projesidir.
 
----
-
-## Bu Modül Ne Yapar?
-
-Jest tanıma motorundan (`gesture_engine.py`) gelen jest adlarını alır ve gerçek bilgisayar komutlarına dönüştürür.
-
-```
-gesture_engine.py → [jest adı + koordinat] → command_handler.py → [fare / ses / uygulama]
-```
+## 🚀 Proje Amacı
+MediaPipe ve OpenCV kütüphanelerini kullanarak el landmark noktalarını tespit etmek ve bu noktaların birbirine göre konumlarından anlamlı "jestler" üreterek fare kontrolü, ses ayarı veya uygulama yönetimi sağlamak.
 
 ---
 
-## Desteklenen Jestler
+## 👥 Ekip ve Görev Dağılımı
+* **Zeynep Karataş (Üye 1):** Kamera akışı, el tespiti ve Web API entegrasyonu. (`hand_detector.py`, `camera_stream.py`)
+* **Ceylin Güzelgörür (Üye 2):** Jest tanıma motoru, matematiksel analiz ve Hassasiyet Filtresi. (`gesture_engine.py`)
+* **Dilara Bilişik (Üye 3):** Sistem entegrasyonu, komut yönetimi ve test süreçleri. (`command_handler.py`, `config.json`)
+* **Elif Rümeysa Demir (Üye 4):** Web arayüzü ve kullanıcı paneli geliştirme. (`web_app.py`)
+
+---
+
+## 🛠 Kullanılan Teknolojiler
+* **Python 3.10+**
+* **OpenCV & MediaPipe:** Görüntü işleme ve el landmark analizi.
+* **Flask:** Web tabanlı kontrol paneli ve canlı yayın.
+* **PyAutoGUI & Keyboard:** Sistem seviyesi komut tetikleyicileri.
+
+---
+
+## ⚙️ Sistem Çalışma Mantığı
+
+Sistem, modüler bir yapıda çalışarak el verilerini komuta dönüştürür:
+
+
+### Desteklenen Jestler ve Komut Tablosu
 
 | Jest | Komut | Açıklama |
 |------|-------|----------|
@@ -26,76 +38,33 @@ gesture_engine.py → [jest adı + koordinat] → command_handler.py → [fare /
 | `thumb_down` | `volume_down` | Sistem sesini azaltır |
 | `pinch_out` | `zoom_in` | Ekranı yakınlaştırır (Ctrl+) |
 | `pinch_in` | `zoom_out` | Ekranı uzaklaştırır (Ctrl-) |
-| `fist_open` | `open_app` | Config'deki uygulamayı açar |
+| `fist_open` | `open_app` | Tanımlı uygulamayı (Notepad vb.) açar |
 
 ---
 
-## Kurulum
+## 💻 Teknik Detaylar (Modül 3)
 
-```bash
-pip install -r requirements.txt
-```
-
----
-
-## Kullanım
-
-```python
-from command_handler import CommandHandler
-
-handler = CommandHandler()
-
-# Üye 2'den gelen veri
-result = {
-    "gesture": "thumb_up",
-    "confidence": 0.95,
-    "hand_coords": {"x": 0.45, "y": 0.30}
-}
-
-handler.execute(result["gesture"], result["hand_coords"])
-```
-
----
-
-## Testleri Çalıştır
-
-```bash
-python -m pytest tests/ -v
-# veya
-python -m unittest tests/test_command.py -v
-```
-
----
-
-## config.json Yapısı
-
+### config.json Yapısı
+Yeni jestler eklemek için kod değişikliği gerekmez, yalnızca yapılandırma dosyası düzenlenir:
 ```json
 {
-  "gestures": {
-    "jest_adı": "komut_adı"
-  },
+  "gestures": { "jest_adı": "komut_adı" },
   "app_to_open": "notepad",
   "volume_step": 5,
   "zoom_step": 0.1
 }
-```
 
-> **Not:** Yeni jest eklemek için yalnızca `config.json` düzenlenir, kod değişikliği gerekmez.
 
----
 
-## Platform Desteği
 
-| Platform | Ses Kontrolü | Uygulama Açma |
-|----------|-------------|---------------|
-| Windows 10/11 | `keyboard.send("volume up/down")` | `subprocess.Popen(app, shell=True)` |
-| Linux (Ubuntu 22.04) | `amixer -D pulse sset Master` | `subprocess.Popen([app])` |
-| macOS | `osascript` | `subprocess.Popen(["open", "-a", app])` |
+### 💻 Platform Desteği
 
----
+Projemiz, farklı işletim sistemlerinde yerel komutları tetikleyebilecek şekilde optimize edilmiştir:
 
-## Güvenlik Özellikleri
+| Platform | Ses Kontrol Mekanizması | Uygulama Başlatma |
+|----------|-------------------------|-------------------|
+| **Windows 10/11** | `keyboard.send("volume up/down")` | `subprocess.Popen(shell=True)` |
+| **Linux (Ubuntu)** | `amixer -D pulse sset Master` | `subprocess.Popen([app])` |
+| **macOS** | `osascript -e "set volume..."` | `subprocess.Popen(["open", "-a", app])` |
 
-- **FAILSAFE:** Fare sol üst köşeye giderse PyAutoGUI otomatik durur
-- **Graceful degradation:** Tanımsız jest gelirse sistem çökmez, log yazılır
-- **Performans izleme:** 100ms eşiği aşılırsa uyarı logu üretilir
+> **Bilgi:** Sistem, çalıştığı işletim sistemini otomatik olarak tespit eder ve uygun sürücüyü (driver) devreye sokar.
