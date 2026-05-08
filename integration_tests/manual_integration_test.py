@@ -1,3 +1,10 @@
+import sys
+import os
+
+# Python'a "Bir üst klasöre de bak, asıl dosyalar orada!" diyoruz
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# ŞİMDİ asıl importlarını yapabilirsin
 import cv2
 from hand_detector import HandDetector
 from gesture_engine import GestureEngine
