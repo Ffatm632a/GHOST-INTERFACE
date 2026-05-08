@@ -1,13 +1,24 @@
 {
+  "_comment_tr": "Ghost Interface — Jest-Komut Eşleştirme Haritası",
+  "_comment_en": "Ghost Interface — Gesture-Command Mapping Configuration",
+
+  "_usage_tr": "Bu dosyada hangi el hareketinin hangi bilgisayar komutunu tetikleyeceği tanımlıdır. Yeni jest eklemek için sadece bu dosyayı düzenle, kod değişikliği gerekmez.",
+  "_usage_en": "This file defines which hand gesture triggers which computer command. To add a new gesture, just edit this file — no code changes needed.",
+
+  "_format_note_tr": "Tüm jest anahtarları küçük harftir. command_handler.py'deki .lower() normalizasyonu sayesinde büyük harf gelse de doğru eşleşme sağlanır.",
+  "_format_note_en": "All gesture keys are lowercase. The .lower() normalization in command_handler.py ensures correct matching even if uppercase is sent.",
+
   "gestures": {
-    "open_palm":  "mouse_move",
-    "fist":       "left_click",
-    "thumb_up":   "volume_up",
-    "thumb_down": "volume_down",
-    "pinch_out":  "zoom_in",
-    "pinch_in":   "zoom_out",
-    "fist_open":  "open_app"
+    "open_palm":   "mouse_move",
+    "fist":        "left_click",
+    "thumb_up":    "volume_up",
+    "thumb_down":  "volume_down",
+    "pinch_out":   "zoom_in",
+    "pinch_in":    "zoom_out",
+    "fist_open":   "open_app",
+    "pointing_up": "left_click"
   },
+
   "app_to_open": "notepad",
   "volume_step": 5,
   "zoom_step": 0.1
