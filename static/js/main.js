@@ -100,6 +100,12 @@ document.addEventListener('DOMContentLoaded', () => {
         documentFrame.src = "";
         document.getElementById('file-list').innerHTML = "";
         addSystemLog(dict[currentLang].logSystemClosed);
+        const vc = document.getElementById('video-container');
+        const img = vc.querySelector('img');
+        if (img) {
+            img.src = "";
+            vc.removeChild(img);
+        }
     });
 
     window.triggerGestureFeedback = function(gestureName) {
