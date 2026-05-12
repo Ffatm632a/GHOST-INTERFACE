@@ -3,7 +3,6 @@ import threading
 import time
 import cv2
 from flask import Flask, Response, jsonify, render_template
-
 from hand_detector import HandDetector
 from gesture_engine import GestureEngine
 from command_handler import CommandHandler
@@ -19,6 +18,32 @@ command_handler = CommandHandler()
 current_gesture = "unknown"
 gesture_lock    = threading.Lock()
 event_log       = []
+
+# --- Cooldown ayarları ---
+COOLDOWNS = {
+    "open_palm":   0,      # Fare hareketi → cooldown yok
+    "swipe_right": 0.8,
+    "swipe_left":  0.8,
+    "thumb_up":    0.8,
+    "thumb_down":  0.8,
+    "pinch_in":    0.8,
+    "pinch_out":   0.8,
+    "fist":        0.5,
+    "pointing_up": 0.5,
+}
+last_gesture_time = {}
+
+def can_execute(gesture):
+    """Cooldown süresi geçti mi kontrol et."""
+    cooldown = COOLDOWNS.get(gesture, 0.8)
+    if cooldown == 0:
+        return True
+    now = time.time()
+    last = last_gesture_time.get(gesture, 0)
+    if now - last >= cooldown:
+        last_gesture_time[gesture] = now
+        return True
+    return False
 
 def gen_frames():
     cap = cv2.VideoCapture(0)
@@ -42,7 +67,7 @@ def gen_frames():
             with gesture_lock:
                 current_gesture = gesture
 
-            if gesture not in ("unknown",):
+            if gesture not in ("unknown",) and can_execute(gesture):
                 command_handler.execute(gesture, coords)
                 entry = {"time": time.strftime("%H:%M:%S"), "gesture": gesture}
                 event_log.append(entry)
