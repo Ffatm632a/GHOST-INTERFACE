@@ -1,70 +1,66 @@
 <!doctype html>
 <html lang="tr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="title">GHOST INTERFACE</title>
+    <title>GHOST INTERFACE</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-
 <body>
-    <!-- Particle canvas (welcome screen background motion) -->
     <canvas id="welcome-particles"></canvas>
-
     <button id="lang-toggle" data-i18n="langBtn">EN</button>
     <div id="welcome-screen">
-
-        <!-- Horizontal scan-line sweep -->
         <div id="scan-line"></div>
         <h1 data-i18n="welcomeTitle">GHOST INTERFACE</h1>
-        <p data-i18n="welcomeDesc">Lütfen sisteme yüklemek veya görüntülemek için bir dosya seçin.</p><input type="file"
-            id="file-input" accept=".pdf,.txt,.jpg,.png" class="hidden"> <label for="file-input" id="file-label"
-            data-i18n="chooseFile">Dosya Seç</label>
-        <div class="action-buttons"><button id="guide-btn" data-i18n="guideBtn">Rehberi Görüntüle</button> <button
-                id="start-btn" data-i18n="startBtn" disabled>Sistemi Başlat</button>
+        <p data-i18n="welcomeDesc">Lütfen sisteme yüklemek veya görüntülemek için bir dosya seçin.</p>
+        <input type="file" id="file-input" accept=".pdf,.txt,.jpg,.png" class="hidden">
+        <label for="file-input" id="file-label" data-i18n="chooseFile">Dosya Seç</label>
+        <div class="action-buttons">
+            <button id="guide-btn" data-i18n="guideBtn">Rehberi Görüntüle</button>
+            <button id="start-btn" data-i18n="startBtn" disabled>Sistemi Başlat</button>
         </div>
     </div>
     <div id="guide-modal" class="hidden">
         <div class="modal-content">
             <h2 data-i18n="guideTitle">Sistem Rehberi</h2>
-            <div class="guide-grid" id="guide-grid-container"></div><button id="close-guide-btn"
-                data-i18n="closeGuideBtn">Kapat</button>
+            <div class="guide-grid" id="guide-grid-container"></div>
+            <button id="close-guide-btn" data-i18n="closeGuideBtn">Kapat</button>
         </div>
     </div>
     <div id="main-dashboard" class="dashboard-container hidden">
-        <div class="left-col"><button id="reset-btn" data-i18n="resetBtn">GERİ DÖN</button>
+        <div class="left-col">
+            <button id="reset-btn" data-i18n="resetBtn">GERİ DÖN</button>
             <h2 data-i18n="filesTitle">Dosyalar</h2>
             <ul id="file-list"></ul>
         </div>
         <div class="mid-col">
-            <h2 data-i18n="docTitle">Döküman</h2><iframe id="document-frame" src=""></iframe>
+            <h2 data-i18n="docTitle">Döküman</h2>
+            <iframe id="document-frame" src=""></iframe>
         </div>
         <div class="right-col">
             <h2 data-i18n="streamTitle">Canlı Akış</h2>
             <div id="video-container"></div>
             <div class="status-chips">
                 <div class="chip">
-                    <span data-i18n="latency">GECİKME:</span> <span id="chip-latency">42ms</span>
+                    <span data-i18n="latency">GECİKME:</span> <span id="chip-latency">--ms</span>
                 </div>
                 <div class="chip">
-                    <span data-i18n="fps">FPS:</span> <span id="chip-fps">60</span>
+                    <span data-i18n="fps">FPS:</span> <span id="chip-fps">--</span>
                 </div>
                 <div class="chip">
                     <span class="dot pulse"></span> <span data-i18n="sysActive">AKTİF</span>
                 </div>
             </div>
             <h2 data-i18n="gestureTitle">Son Jest</h2>
-            <h3 id="detected-gesture" class="pulse-text"><span id="gesture-text" data-i18n="waiting">SİNYAL
-                    BEKLENİYOR...</span></h3>
+            <h3 id="detected-gesture" class="pulse-text">
+                <span id="gesture-text" data-i18n="waiting">SİNYAL BEKLENİYOR...</span>
+            </h3>
             <h2 data-i18n="logsTitle">Loglar</h2>
             <ul id="system-logs">
                 <li data-i18n="logInit">Sistem başlatıldı.</li>
             </ul>
         </div>
     </div>
-
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
-
 </html>
