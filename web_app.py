@@ -1,4 +1,3 @@
-import math
 import threading
 import time
 import cv2
@@ -18,10 +17,11 @@ command_handler = CommandHandler()
 current_gesture = "unknown"
 gesture_lock    = threading.Lock()
 event_log       = []
+log_lock        = threading.Lock()  # event_log için ayrı lock
 
 # --- Cooldown ayarları ---
 COOLDOWNS = {
-    "open_palm":   0,      # Fare hareketi → cooldown yok
+    "open_palm":   0,
     "swipe_right": 0.8,
     "swipe_left":  0.8,
     "thumb_up":    0.8,
@@ -34,7 +34,6 @@ COOLDOWNS = {
 last_gesture_time = {}
 
 def can_execute(gesture):
-    """Cooldown süresi geçti mi kontrol et."""
     cooldown = COOLDOWNS.get(gesture, 0.8)
     if cooldown == 0:
         return True
@@ -49,42 +48,49 @@ def gen_frames():
     cap = cv2.VideoCapture(0)
     global current_gesture
 
-    while True:
-        ok, frame = cap.read()
-        if not ok:
-            time.sleep(0.05)
-            continue
+    if not cap.isOpened():
+        hand_detector.close()
+        return
 
-        frame = cv2.flip(frame, 1)
+    try:
+        while True:
+            ok, frame = cap.read()
+            if not ok:
+                time.sleep(0.05)
+                continue
 
-        try:
-            frame     = hand_detector.find_hands(frame, draw=True)
-            landmarks = hand_detector.get_landmark_positions()
-            result    = gesture_engine.detect_gesture(landmarks)
-            gesture   = result["gesture"]
-            coords    = result["hand_coords"]
+            frame = cv2.flip(frame, 1)
 
-            with gesture_lock:
-                current_gesture = gesture
+            try:
+                frame     = hand_detector.find_hands(frame, draw=True)
+                landmarks = hand_detector.get_landmark_positions()
+                result    = gesture_engine.detect_gesture(landmarks)
+                gesture   = result["gesture"]
+                coords    = result["hand_coords"]
 
-            if gesture not in ("unknown",) and can_execute(gesture):
-                command_handler.execute(gesture, coords)
-                entry = {"time": time.strftime("%H:%M:%S"), "gesture": gesture}
-                event_log.append(entry)
-                if len(event_log) > 30:
-                    event_log.pop(0)
+                with gesture_lock:
+                    current_gesture = gesture
 
-            # Kare üstüne jest yaz
-            color = (0, 255, 120) if gesture != "unknown" else (80, 80, 80)
-            cv2.putText(frame, f"Jest: {gesture}", (10, 40),
-                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
+                if gesture not in ("unknown",) and can_execute(gesture):
+                    command_handler.execute(gesture, coords)
+                    entry = {"time": time.strftime("%H:%M:%S"), "gesture": gesture}
+                    with log_lock:
+                        event_log.append(entry)
+                        if len(event_log) > 30:
+                            event_log.pop(0)
 
-        except Exception as e:
-            pass
+                color = (0, 255, 120) if gesture != "unknown" else (80, 80, 80)
+                cv2.putText(frame, f"Jest: {gesture}", (10, 40),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
 
-        _, buf = cv2.imencode(".jpg", frame)
-        yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
-               + buf.tobytes() + b"\r\n")
+            except Exception:
+                pass
+
+            _, buf = cv2.imencode(".jpg", frame)
+            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
+                   + buf.tobytes() + b"\r\n")
+    finally:
+        cap.release()
 
 
 @app.route("/")
@@ -100,14 +106,16 @@ def video_feed():
 def api_status():
     with gesture_lock:
         g = current_gesture
-    return jsonify({
-        "gesture": g,
-        "log":     list(reversed(event_log))[:15],
-    })
+    with log_lock:
+        log_copy = list(reversed(event_log))[:15]
+    return jsonify({"gesture": g, "log": log_copy})
 
 @app.route("/api/camera/status")
 def camera_status():
-    return jsonify({"ok": True})
+    cap = cv2.VideoCapture(0)
+    ok = cap.isOpened()
+    cap.release()
+    return jsonify({"ok": ok})
 
 
 if __name__ == "__main__":
