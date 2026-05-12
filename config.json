@@ -15,8 +15,9 @@
     "thumb_down":  "volume_down",
     "pinch_out":   "zoom_in",
     "pinch_in":    "zoom_out",
-    "fist_open":   "open_app",
-    "pointing_up": "left_click"
+    "pointing_up": "left_click",
+    "swipe_right": "next_page",
+    "swipe_left":  "prev_page"
   },
 
   "app_to_open": "notepad",
