@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
         { id: "pinch_out",  icon: "🤌", protocol: "[ZOOM_IN]",     tr: "Yakınlaştır",    en: "Zoom In"     },
         { id: "pinch_in",   icon: "🤌", protocol: "[ZOOM_OUT]",    tr: "Uzaklaştır",     en: "Zoom Out"    },
         { id: "fist",       icon: "✊", protocol: "[CLICK]",       tr: "Tıkla",          en: "Click"       },
-        { id: "fist_open",  icon: "🖐️", protocol: "[OPEN_APP]",   tr: "Uygulama Aç",   en: "Open App"    },
+        { id: "swipe_right", icon: "👉", protocol: "[NEXT_PAGE]",   tr: "Sonraki Sayfa",  en: "Next Page"   },
+        { id: "swipe_left",  icon: "👈", protocol: "[PREV_PAGE]",   tr: "Önceki Sayfa",   en: "Previous Page"}, 
         { id: "open_palm",  icon: "✋", protocol: "[MOUSE_MOVE]",  tr: "Fare Hareket",   en: "Mouse Move"  },
     ];
 
