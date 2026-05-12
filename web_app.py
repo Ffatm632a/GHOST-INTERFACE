@@ -2,14 +2,13 @@ import threading
 import time
 import cv2
 from flask import Flask, Response, jsonify, render_template
-from hand_detector import HandDetector
+from camera_stream import CameraStream
 from gesture_engine import GestureEngine
 from command_handler import CommandHandler
 
 app = Flask(__name__)
 
 # --- Nesneler ---
-hand_detector   = HandDetector()
 gesture_engine  = GestureEngine()
 command_handler = CommandHandler()
 
@@ -17,7 +16,7 @@ command_handler = CommandHandler()
 current_gesture = "unknown"
 gesture_lock    = threading.Lock()
 event_log       = []
-log_lock        = threading.Lock()  # event_log için ayrı lock
+log_lock        = threading.Lock()
 
 # --- Cooldown ayarları ---
 COOLDOWNS = {
@@ -38,32 +37,22 @@ def can_execute(gesture):
     if cooldown == 0:
         return True
     now = time.time()
-    last = last_gesture_time.get(gesture, 0)
-    if now - last >= cooldown:
+    if now - last_gesture_time.get(gesture, 0) >= cooldown:
         last_gesture_time[gesture] = now
         return True
     return False
 
 def gen_frames():
-    cap = cv2.VideoCapture(0)
+    """Her istek için yeni CameraStream açar — kamera sızıntısı yok."""
     global current_gesture
-
-    if not cap.isOpened():
-        hand_detector.close()
-        return
+    stream = CameraStream()
 
     try:
-        while True:
-            ok, frame = cap.read()
-            if not ok:
-                time.sleep(0.05)
-                continue
-
-            frame = cv2.flip(frame, 1)
-
-            try:
-                frame     = hand_detector.find_hands(frame, draw=True)
-                landmarks = hand_detector.get_landmark_positions()
+        for jpg_bytes in stream.frames():
+            # jpg_bytes = MJPEG frame (--frame\r\n...); landmark bilgisi stream içinde işlendi
+            # Gesture tespiti için stream.detector'dan landmark al
+            if stream.detector is not None:
+                landmarks = stream.detector.get_landmark_positions()
                 result    = gesture_engine.detect_gesture(landmarks)
                 gesture   = result["gesture"]
                 coords    = result["hand_coords"]
@@ -71,7 +60,7 @@ def gen_frames():
                 with gesture_lock:
                     current_gesture = gesture
 
-                if gesture not in ("unknown",) and can_execute(gesture):
+                if gesture != "unknown" and can_execute(gesture):
                     command_handler.execute(gesture, coords)
                     entry = {"time": time.strftime("%H:%M:%S"), "gesture": gesture}
                     with log_lock:
@@ -79,18 +68,17 @@ def gen_frames():
                         if len(event_log) > 30:
                             event_log.pop(0)
 
-                color = (0, 255, 120) if gesture != "unknown" else (80, 80, 80)
-                cv2.putText(frame, f"Jest: {gesture}", (10, 40),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1.0, color, 2)
+            yield jpg_bytes
 
-            except Exception:
-                pass
-
-            _, buf = cv2.imencode(".jpg", frame)
-            yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
-                   + buf.tobytes() + b"\r\n")
-    finally:
-        cap.release()
+    except RuntimeError:
+        # Kamera açılamadı — boş frame gönder
+        import numpy as np
+        blank = 10 * np.ones((480, 640, 3), dtype="uint8")
+        cv2.putText(blank, "Kamera bulunamadi", (120, 240),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 100), 2)
+        _, buf = cv2.imencode(".jpg", blank)
+        yield (b"--frame\r\nContent-Type: image/jpeg\r\n\r\n"
+               + buf.tobytes() + b"\r\n")
 
 
 @app.route("/")
