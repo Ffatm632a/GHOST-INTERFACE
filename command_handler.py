@@ -16,7 +16,7 @@ import time
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("CommandHandler")
 
-pyautogui.FAILSAFE = True
+pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0.01
 PERFORMANCE_THRESHOLD_MS = 100
 
@@ -122,15 +122,19 @@ class CommandHandler:
 
     def _zoom_in(self, hand_coords: dict = None):
         try:
-            pyautogui.hotkey("ctrl", "+")
-            logger.info("Zoom in (Ctrl++).")
+            pyautogui.keyDown('ctrl')
+            pyautogui.scroll(500)
+            pyautogui.keyUp('ctrl')
+            logger.info("Zoom in (Ctrl + Scroll Up).")
         except Exception as e:
             logger.error(f"Zoom in başarısız: {e}")
 
     def _zoom_out(self, hand_coords: dict = None):
         try:
-            pyautogui.hotkey("ctrl", "-")
-            logger.info("Zoom out (Ctrl+-).")
+            pyautogui.keyDown('ctrl')
+            pyautogui.scroll(-500)
+            pyautogui.keyUp('ctrl')
+            logger.info("Zoom out (Ctrl + Scroll Down).")
         except Exception as e:
             logger.error(f"Zoom out başarısız: {e}")
 
@@ -150,14 +154,14 @@ class CommandHandler:
     def _next_page(self, hand_coords: dict = None):
         try:
             keyboard.send("right")
-            logger.info("Sonraki sayfa.")
+            logger.info("Sonraki sayfa (Right).")
         except Exception as e:
             logger.error(f"Sonraki sayfa hatası: {e}")
 
     def _prev_page(self, hand_coords: dict = None):
         try:
             keyboard.send("left")
-            logger.info("Önceki sayfa.")
+            logger.info("Önceki sayfa (Left).")
         except Exception as e:
             logger.error(f"Önceki sayfa hatası: {e}")
 

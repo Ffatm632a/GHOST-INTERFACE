@@ -75,23 +75,31 @@ class TestCommandHandler(unittest.TestCase):
         mock_move.assert_not_called()     # TR: Çağrılmadı mı? / EN: Was it NOT called?
 
     # ── Zoom Testleri / Zoom Tests ───────────────────────────
-    @patch("pyautogui.hotkey")
-    def test_zoom_in(self, mock_hotkey):
+    @patch("pyautogui.scroll")
+    @patch("pyautogui.keyDown")
+    @patch("pyautogui.keyUp")
+    def test_zoom_in(self, mock_keyup, mock_keydown, mock_scroll):
         """
-        TR: Parmak açma (pinch_out) → Ctrl+'+' çağrılmalı.
-        EN: Pinch out → Ctrl+'+' should be called.
+        TR: Parmak açma (pinch_out) → Ctrl+Scroll(500) çağrılmalı.
+        EN: Pinch out → Ctrl+Scroll(500) should be called.
         """
         self.handler.execute("pinch_out")
-        mock_hotkey.assert_called_with("ctrl", "+")
+        mock_keydown.assert_called_with("ctrl")
+        mock_scroll.assert_called_with(500)
+        mock_keyup.assert_called_with("ctrl")
 
-    @patch("pyautogui.hotkey")
-    def test_zoom_out(self, mock_hotkey):
+    @patch("pyautogui.scroll")
+    @patch("pyautogui.keyDown")
+    @patch("pyautogui.keyUp")
+    def test_zoom_out(self, mock_keyup, mock_keydown, mock_scroll):
         """
-        TR: Parmak kapama (pinch_in) → Ctrl+'-' çağrılmalı.
-        EN: Pinch in → Ctrl+'-' should be called.
+        TR: Parmak kapama (pinch_in) → Ctrl+Scroll(-500) çağrılmalı.
+        EN: Pinch in → Ctrl+Scroll(-500) should be called.
         """
         self.handler.execute("pinch_in")
-        mock_hotkey.assert_called_with("ctrl", "-")
+        mock_keydown.assert_called_with("ctrl")
+        mock_scroll.assert_called_with(-500)
+        mock_keyup.assert_called_with("ctrl")
 
     # ── Tanımsız Jest Testi / Unknown Gesture Test ───────────
     def test_unknown_gesture_no_exception(self):
@@ -130,10 +138,10 @@ class TestCommandHandler(unittest.TestCase):
     @patch("subprocess.Popen")
     def test_open_app_called(self, mock_popen):
         """
-        TR: Yumruk açma (fist_open) → subprocess.Popen çağrılmalı.
-        EN: Fist open gesture → subprocess.Popen should be called.
+        TR: Uygulama açma komutu çağrıldığında subprocess.Popen çalışmalı.
         """
-        self.handler.execute("fist_open")
+        self.handler.config["gestures"]["test_open"] = "open_app"
+        self.handler.execute("test_open")
         mock_popen.assert_called_once()
 
     # ── Ses Kontrolü Testleri / Volume Control Tests ─────────
@@ -197,11 +205,13 @@ class TestCommandHandlerIntegration(unittest.TestCase):
         self.handler = CommandHandler()
 
     # ── Geriye Dönük Uyumluluk / Backward Compatibility ──────
-    @patch("pyautogui.hotkey")
-    def test_gesture_engine_format_zoom_in(self, mock_hotkey):
+    @patch("pyautogui.scroll")
+    @patch("pyautogui.keyDown")
+    @patch("pyautogui.keyUp")
+    def test_gesture_engine_format_zoom_in(self, mock_keyup, mock_keydown, mock_scroll):
         """
-        TR: Küçük harfli "pinch_out" → Ctrl+'+' çalışmalı.
-        EN: Lowercase "pinch_out" → Ctrl+'+' should work.
+        TR: Küçük harfli "pinch_out" → Ctrl+Scroll(500) çalışmalı.
+        EN: Lowercase "pinch_out" → Ctrl+Scroll(500) should work.
         """
         gesture_result = {
             "gesture": "pinch_out",
@@ -212,7 +222,9 @@ class TestCommandHandlerIntegration(unittest.TestCase):
             gesture_result["gesture"],
             gesture_result["hand_coords"]
         )
-        mock_hotkey.assert_called_with("ctrl", "+")
+        mock_keydown.assert_called_with("ctrl")
+        mock_scroll.assert_called_with(500)
+        mock_keyup.assert_called_with("ctrl")
 
     @patch("pyautogui.moveTo")
     def test_gesture_engine_format_mouse_move(self, mock_move):
@@ -414,11 +426,13 @@ class TestSprintThreeFullPipeline(unittest.TestCase):
         self.assertEqual(mock_send.call_count, 5)
 
     # ── UC-05: Yakınlaştırma / Zoom In ───────────────────────
-    @patch("pyautogui.hotkey")
-    def test_pipeline_pinch_out_zoom_in(self, mock_hotkey):
+    @patch("pyautogui.scroll")
+    @patch("pyautogui.keyDown")
+    @patch("pyautogui.keyUp")
+    def test_pipeline_pinch_out_zoom_in(self, mock_keyup, mock_keydown, mock_scroll):
         """
-        TR: Ceylin "pinch_out" gönderdi → Ctrl+'+' çalışmalı.
-        EN: Ceylin sent "pinch_out" → Ctrl+'+' should fire.
+        TR: Ceylin "pinch_out" gönderdi → Ctrl+Scroll(500) çalışmalı.
+        EN: Ceylin sent "pinch_out" → Ctrl+Scroll(500) should fire.
         """
         ceylin_output = {
             "gesture": "pinch_out",
@@ -429,14 +443,18 @@ class TestSprintThreeFullPipeline(unittest.TestCase):
             ceylin_output["gesture"],
             ceylin_output["hand_coords"]
         )
-        mock_hotkey.assert_called_with("ctrl", "+")
+        mock_keydown.assert_called_with("ctrl")
+        mock_scroll.assert_called_with(500)
+        mock_keyup.assert_called_with("ctrl")
 
     # ── UC-06: Uzaklaştırma / Zoom Out ───────────────────────
-    @patch("pyautogui.hotkey")
-    def test_pipeline_pinch_in_zoom_out(self, mock_hotkey):
+    @patch("pyautogui.scroll")
+    @patch("pyautogui.keyDown")
+    @patch("pyautogui.keyUp")
+    def test_pipeline_pinch_in_zoom_out(self, mock_keyup, mock_keydown, mock_scroll):
         """
-        TR: Ceylin "pinch_in" gönderdi → Ctrl+'-' çalışmalı.
-        EN: Ceylin sent "pinch_in" → Ctrl+'-' should fire.
+        TR: Ceylin "pinch_in" gönderdi → Ctrl+Scroll(-500) çalışmalı.
+        EN: Ceylin sent "pinch_in" → Ctrl+Scroll(-500) should fire.
         """
         ceylin_output = {
             "gesture": "pinch_in",
@@ -447,17 +465,18 @@ class TestSprintThreeFullPipeline(unittest.TestCase):
             ceylin_output["gesture"],
             ceylin_output["hand_coords"]
         )
-        mock_hotkey.assert_called_with("ctrl", "-")
+        mock_keydown.assert_called_with("ctrl")
+        mock_scroll.assert_called_with(-500)
+        mock_keyup.assert_called_with("ctrl")
 
     # ── UC-07: Uygulama Aç / Open App ────────────────────────
-    @patch("subprocess.Popen")
-    def test_pipeline_fist_open_app(self, mock_popen):
+    @patch("keyboard.send")
+    def test_pipeline_swipe_right_next_page(self, mock_send):
         """
-        TR: Ceylin "fist_open" gönderdi → notepad açılmalı.
-        EN: Ceylin sent "fist_open" → notepad should open.
+        TR: Ceylin "swipe_right" gönderdi → right çalışmalı.
         """
         ceylin_output = {
-            "gesture": "fist_open",
+            "gesture": "swipe_right",
             "confidence": 1.0,
             "hand_coords": {"x": 0.5, "y": 0.5}
         }
@@ -465,7 +484,7 @@ class TestSprintThreeFullPipeline(unittest.TestCase):
             ceylin_output["gesture"],
             ceylin_output["hand_coords"]
         )
-        mock_popen.assert_called_once()
+        mock_send.assert_called_with("right")
 
     # ── Tanımsız Jest / Unknown Gesture ──────────────────────
     def test_pipeline_unknown_gesture_silent(self):

@@ -11,8 +11,8 @@ class GestureEngine:
 
         # Swipe tespiti için
         self.swipe_history = []
-        self.swipe_window = 8       # Son 8 kare
-        self.swipe_threshold = 0.15 # En az %15 ekran genişliği hareket
+        self.swipe_window = 10       # Son 10 kare
+        self.swipe_threshold = 0.08  # En az %8 ekran genişliği hareket
 
     def smooth_coordinates(self, x, y):
         self.history_x.append(x)
@@ -35,7 +35,7 @@ class GestureEngine:
             fingers.append(landmarks[tip].y < landmarks[pip].y)
         return fingers
 
-    def detect_swipe(self, x):
+    def detect_swipe(self, x, is_open):
         """Sağa/sola kaydırma tespiti."""
         self.swipe_history.append(x)
         if len(self.swipe_history) > self.swipe_window:
@@ -43,12 +43,13 @@ class GestureEngine:
 
         if len(self.swipe_history) >= self.swipe_window:
             delta = self.swipe_history[-1] - self.swipe_history[0]
-            if delta > self.swipe_threshold:
-                self.swipe_history = []
-                return "swipe_right"
-            elif delta < -self.swipe_threshold:
-                self.swipe_history = []
-                return "swipe_left"
+            if is_open:
+                if delta > self.swipe_threshold:
+                    self.swipe_history = []
+                    return "swipe_right"
+                elif delta < -self.swipe_threshold:
+                    self.swipe_history = []
+                    return "swipe_left"
         return None
 
     def detect_gesture(self, landmarks):
@@ -63,6 +64,8 @@ class GestureEngine:
         center_coords = {"x": smooth_x, "y": smooth_y}
 
         fingers = self.get_finger_status(landmarks)
+        is_open = all(f is True for f in fingers)
+        swipe_direction = self.detect_swipe(smooth_x, is_open)
         dist_pinch = self.calculate_distance(landmarks[4], landmarks[8])
 
         gesture_name = "unknown"
@@ -81,10 +84,9 @@ class GestureEngine:
                 gesture_name = "thumb_down"
 
         # 3. SWIPE (açık el ile sağa/sola)
-        elif all(f is True for f in fingers):
-            swipe = self.detect_swipe(landmarks[0].x)
-            if swipe:
-                gesture_name = swipe
+        elif is_open:
+            if swipe_direction:
+                gesture_name = swipe_direction
             else:
                 gesture_name = "open_palm"
 

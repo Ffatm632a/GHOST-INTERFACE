@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         langToggle.classList.add('hidden');
         mainDashboard.classList.remove('hidden');
         addSystemLog(dict[currentLang].logSystemStarted);
-        documentFrame.src = URL.createObjectURL(selectedFile);
+        documentFrame.src = URL.createObjectURL(selectedFile) + "#toolbar=0&navpanes=0&scrollbar=0&view=Fit";
         document.getElementById('file-list').innerHTML = `
             <li class="file-item">
                 <span>${selectedFile.name}</span>

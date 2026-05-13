@@ -18,7 +18,11 @@ class CameraStream:
         self.started_at = None
 
     def frames(self):
-        cap = cv2.VideoCapture(self.camera_index)
+        import platform
+        if platform.system() == "Windows":
+            cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
+        else:
+            cap = cv2.VideoCapture(self.camera_index)
         if not cap.isOpened():
             raise RuntimeError("Webcam acilamadi.")
 
