@@ -1,70 +1,72 @@
-# 👻 GHOST-INTERFACE
+# GHOST-INTERFACE
 
-Bu proje, yapay zeka ve görüntü işleme tekniklerini kullanarak bilgisayar sistemlerini el hareketleriyle (temassız) kontrol etmeyi amaçlayan bir arayüz projesidir.
+This project is an interface project that aims to control computer systems with hand gestures, without physical contact, using artificial intelligence and image processing techniques.
 
-## 🚀 Proje Amacı
-MediaPipe ve OpenCV kütüphanelerini kullanarak el landmark noktalarını tespit etmek ve bu noktaların birbirine göre konumlarından anlamlı "jestler" üreterek fare kontrolü, ses ayarı veya uygulama yönetimi sağlamak.
+## Project Purpose
 
----
-
-## 👥 Ekip ve Görev Dağılımı
-* **Zeynep Karataş (Üye 1):** Kamera akışı, el tespiti ve Web API entegrasyonu. (`hand_detector.py`, `camera_stream.py`)
-* **Ceylin Güzelgörür (Üye 2):** Jest tanıma motoru, matematiksel analiz ve Hassasiyet Filtresi. (`gesture_engine.py`)
-* **Dilara Bilişik (Üye 3):** Sistem entegrasyonu, komut yönetimi ve test süreçleri. (`command_handler.py`, `config.json`)
-* **Elif Rümeysa Demir (Üye 4):** Web arayüzü ve kullanıcı paneli geliştirme. (`web_app.py`)
+Using the MediaPipe and OpenCV libraries, the project detects hand landmark points and generates meaningful "gestures" from the relative positions of these points to provide mouse control, volume adjustment, or application management.
 
 ---
 
-## 🛠 Kullanılan Teknolojiler
+## Team and Task Distribution
+
+* **Zeynep Karatas (Member 1):** Camera stream, hand detection, and Web API integration. (`hand_detector.py`, `camera_stream.py`)
+* **Ceylin Guzelgorur (Member 2):** Gesture recognition engine, mathematical analysis, and sensitivity filter. (`gesture_engine.py`)
+* **Dilara Bilisik (Member 3):** System integration, command management, and testing processes. (`command_handler.py`, `config.json`)
+* **Elif Rumeysa Demir (Member 4):** Web interface and user dashboard development. (`web_app.py`)
+
+---
+
+## Technologies Used
+
 * **Python 3.10+**
-* **OpenCV & MediaPipe:** Görüntü işleme ve el landmark analizi.
-* **Flask:** Web tabanlı kontrol paneli ve canlı yayın.
-* **PyAutoGUI & Keyboard:** Sistem seviyesi komut tetikleyicileri.
+* **OpenCV & MediaPipe:** Image processing and hand landmark analysis.
+* **Flask:** Web-based control panel and live streaming.
+* **PyAutoGUI & Keyboard:** System-level command triggers.
 
 ---
 
-## ⚙️ Sistem Çalışma Mantığı
+## System Workflow
 
-Sistem, modüler bir yapıda çalışarak el verilerini komuta dönüştürür:
+The system works in a modular structure and converts hand data into commands:
 
+### Supported Gestures and Command Table
 
-### Desteklenen Jestler ve Komut Tablosu
-
-| Jest | Komut | Açıklama |
+| Gesture | Command | Description |
 |------|-------|----------|
-| `open_palm` | `mouse_move` | Fare imlecini el pozisyonuna taşır |
-| `fist` | `left_click` | Sol fare tıklaması yapar |
-| `thumb_up` | `volume_up` | Sistem sesini artırır |
-| `thumb_down` | `volume_down` | Sistem sesini azaltır |
-| `pinch_out` | `zoom_in` | Ekranı yakınlaştırır (Ctrl+) |
-| `pinch_in` | `zoom_out` | Ekranı uzaklaştırır (Ctrl-) |
-| `fist_open` | `open_app` | Tanımlı uygulamayı (Notepad vb.) açar |
+| `open_palm` | `mouse_move` | Moves the mouse cursor to the hand position |
+| `fist` | `left_click` | Performs a left mouse click |
+| `thumb_up` | `volume_up` | Increases the system volume |
+| `thumb_down` | `volume_down` | Decreases the system volume |
+| `pinch_out` | `zoom_in` | Zooms in on the screen (Ctrl+) |
+| `pinch_in` | `zoom_out` | Zooms out on the screen (Ctrl-) |
+| `fist_open` | `open_app` | Opens the defined application (Notepad, etc.) |
 
 ---
 
-## 💻 Teknik Detaylar (Modül 3)
+## Technical Details (Module 3)
 
-### config.json Yapısı
-Yeni jestler eklemek için kod değişikliği gerekmez, yalnızca yapılandırma dosyası düzenlenir:
+### config.json Structure
+
+To add new gestures, no code change is required; only the configuration file is edited:
+
 ```json
 {
-  "gestures": { "jest_adı": "komut_adı" },
+  "gestures": { "gesture_name": "command_name" },
   "app_to_open": "notepad",
   "volume_step": 5,
   "zoom_step": 0.1
 }
+```
 
+### Platform Support
 
+Our project is optimized to trigger local commands on different operating systems:
 
-
-### 💻 Platform Desteği
-
-Projemiz, farklı işletim sistemlerinde yerel komutları tetikleyebilecek şekilde optimize edilmiştir:
-
-| Platform | Ses Kontrol Mekanizması | Uygulama Başlatma |
+| Platform | Volume Control Mechanism | Application Launch |
 |----------|-------------------------|-------------------|
 | **Windows 10/11** | `keyboard.send("volume up/down")` | `subprocess.Popen(shell=True)` |
 | **Linux (Ubuntu)** | `amixer -D pulse sset Master` | `subprocess.Popen([app])` |
 | **macOS** | `osascript -e "set volume..."` | `subprocess.Popen(["open", "-a", app])` |
 
-> **Bilgi:** Sistem, çalıştığı işletim sistemini otomatik olarak tespit eder ve uygun sürücüyü (driver) devreye sokar.
+> **Note:** The system automatically detects the operating system it is running on and activates the appropriate driver.
