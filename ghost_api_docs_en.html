@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GHOST INTERFACE — API Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600&family=Syne:wght@400;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #000000;
+    --abyss: #050508;
+    --deep: #0a0a12;
+    --surface: #0f0f1a;
+    --raised: #141420;
+    --border: #1e1e30;
+    --border-glow: #2a2a45;
+    --ghost: rgba(120,100,220,0.15);
+    --ghost-bright: rgba(140,120,255,0.3);
+    --accent: #7c5cfc;
+    --accent-bright: #9b7dff;
+    --accent-dim: #4a3a9e;
+    --neon: #00e5ff;
+    --neon-dim: rgba(0,229,255,0.2);
+    --danger: #ff3864;
+    --warn: #ffb700;
+    --success: #00ff99;
+    --text-primary: #e8e0ff;
+    --text-secondary: #8880aa;
+    --text-muted: #443d66;
+    --mono: 'IBM Plex Mono', monospace;
+    --display: 'Syne', sans-serif;
+    --body: 'Inter', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--abyss);
+    color: var(--text-primary);
+    font-family: var(--body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -20%;
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(124,92,252,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -30%;
+    left: -10%;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 80px 60px 60px;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    z-index: 1;
+  }
+  header::before {
+    content: 'GHOST';
+    position: absolute;
+    top: -30px;
+    left: 40px;
+    font-family: var(--display);
+    font-size: 200px;
+    font-weight: 800;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(124,92,252,0.08);
+    letter-spacing: -10px;
+    pointer-events: none;
+    user-select: none;
+  }
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-tag::before {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: var(--display);
+    font-size: 52px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-bright) 50%, var(--neon) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+  .header-sub {
+    font-size: 15px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+  .header-meta {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 6px 14px;
+    border: 1px solid var(--border-glow);
+    border-radius: 2px;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+    background: var(--surface);
+  }
+  .badge.active { border-color: var(--accent-dim); color: var(--accent-bright); background: rgba(124,92,252,0.08); }
+  .badge.warn { border-color: rgba(255,183,0,0.3); color: var(--warn); background: rgba(255,183,0,0.05); }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 280px);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SIDEBAR ── */
+  nav {
+    border-right: 1px solid var(--border);
+    padding: 40px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    background: var(--abyss);
+  }
+  nav::-webkit-scrollbar { width: 3px; }
+  nav::-webkit-scrollbar-track { background: transparent; }
+  nav::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 2px; }
+
+  .nav-section { padding: 0 24px; margin-bottom: 32px; }
+  .nav-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-left: 8px;
+  }
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.2s;
+    cursor: pointer;
+    margin-bottom: 2px;
+    font-weight: 400;
+    border-left: 2px solid transparent;
+  }
+  nav a:hover, nav a.active {
+    color: var(--text-primary);
+    background: var(--surface);
+    border-left-color: var(--accent);
+  }
+  .method-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .method-dot.neon { background: var(--neon); }
+
+  /* ── MAIN CONTENT ── */
+  main {
+    padding: 60px 60px 100px;
+    max-width: 900px;
+  }
+  section {
+    margin-bottom: 80px;
+    scroll-margin-top: 40px;
+  }
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    flex-shrink: 0;
+    letter-spacing: 1px;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .card:hover { border-color: var(--border-glow); }
+  .card:hover::before { opacity: 1; }
+
+  /* ── ENDPOINTS ── */
+  .endpoint {
+    background: var(--deep);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .endpoint-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 24px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid transparent;
+  }
+  .endpoint-header:hover { background: var(--surface); }
+  .endpoint.open .endpoint-header {
+    background: var(--surface);
+    border-bottom-color: var(--border);
+  }
+  .method-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+  .method-get  { background: rgba(0,229,255,0.12);  color: var(--neon);    border: 1px solid rgba(0,229,255,0.25); }
+  .method-post { background: rgba(0,255,153,0.10);  color: var(--success); border: 1px solid rgba(0,255,153,0.20); }
+  .method-put  { background: rgba(255,183,0,0.10);  color: var(--warn);    border: 1px solid rgba(255,183,0,0.20); }
+  .endpoint-path { font-family: var(--mono); font-size: 14px; color: var(--text-primary); flex-grow: 1; }
+  .endpoint-desc { font-size: 12px; color: var(--text-secondary); }
+  .chevron { font-size: 10px; color: var(--text-muted); transition: transform 0.3s; flex-shrink: 0; }
+  .endpoint.open .chevron { transform: rotate(180deg); }
+  .endpoint-body { display: none; padding: 24px; }
+  .endpoint.open .endpoint-body { display: block; }
+
+  /* ── CODE ── */
+  .code-block {
+    background: var(--void);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: #aaa8cc;
+    overflow-x: auto;
+    position: relative;
+    margin: 12px 0;
+    line-height: 1.8;
+    white-space: pre;
+  }
+  .token-key   { color: var(--accent-bright); }
+  .token-str   { color: #b8ffd0; }
+  .token-num   { color: var(--neon); }
+  .token-bool  { color: var(--warn); }
+  .token-comment { color: var(--text-muted); font-style: italic; }
+  .code-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 20px 0 6px;
+  }
+  .copy-btn {
+    position: absolute;
+    top: 12px; right: 12px;
+    font-family: var(--mono);
+    font-size: 9px;
+    padding: 4px 10px;
+    background: var(--raised);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+
+  /* ── TABLES ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+  .data-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+  .data-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(30,30,48,0.5);
+    color: var(--text-secondary);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.015); }
+  .data-table td:first-child { font-family: var(--mono); font-size: 12px; color: var(--accent-bright); }
+
+  /* ── GESTURE GRID ── */
+  .gesture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .gesture-card {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.25s;
+  }
+  .gesture-card:hover {
+    border-color: var(--ghost-bright);
+    background: var(--ghost);
+    transform: translateY(-2px);
+  }
+  .gesture-emoji { font-size: 28px; margin-bottom: 8px; }
+  .gesture-name  { font-family: var(--mono); font-size: 10px; color: var(--accent-bright); margin-bottom: 4px; letter-spacing: 1px; }
+  .gesture-cmd   { font-size: 11px; color: var(--text-secondary); }
+  .gesture-cooldown { font-family: var(--mono); font-size: 9px; color: var(--neon); margin-top: 4px; opacity: 0.7; }
+
+  /* ── PIPELINE ── */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 20px 0;
+  }
+  .pipe-step {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+  }
+  .pipe-step:hover { border-color: var(--accent-dim); color: var(--accent-bright); }
+  .pipe-arrow { color: var(--text-muted); font-size: 14px; flex-shrink: 0; }
+
+  /* ── INFO BOXES ── */
+  .info-box {
+    display: flex;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 4px;
+    margin: 16px 0;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .info-box.warn    { background: rgba(255,183,0,0.06);  border: 1px solid rgba(255,183,0,0.2);  color: rgba(255,183,0,0.85); }
+  .info-box.danger  { background: rgba(255,56,100,0.06); border: 1px solid rgba(255,56,100,0.2); color: rgba(255,56,100,0.85); }
+  .info-box.info    { background: rgba(0,229,255,0.05);  border: 1px solid rgba(0,229,255,0.15); color: rgba(0,229,255,0.75); }
+  .info-box.success { background: rgba(0,255,153,0.05);  border: 1px solid rgba(0,255,153,0.15); color: rgba(0,255,153,0.75); }
+  .info-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* ── URL BAR ── */
+  .url-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--void);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px 20px;
+    margin: 16px 0;
+    font-family: var(--mono);
+    font-size: 14px;
+  }
+  .url-bar .protocol { color: var(--text-muted); }
+  .url-bar .host     { color: var(--neon); }
+  .url-bar .port     { color: var(--text-muted); }
+
+  /* ── PLATFORM GRID ── */
+  .platform-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 16px 0;
+  }
+  .platform-card {
+    background: var(--raised);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+  }
+  .platform-name {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .platform-name.win   { color: #00b4f5; }
+  .platform-name.linux { color: var(--success); }
+  .platform-name.mac   { color: #aaaaaa; }
+  .platform-cmd { font-family: var(--mono); font-size: 11px; color: var(--text-secondary); line-height: 2; }
+
+  /* ── DEMO BOX ── */
+  .demo-box {
+    background: var(--void);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .demo-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .blink { animation: blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    position: relative;
+    z-index: 1;
+  }
+  .footer-logo {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: 14px;
+    background: linear-gradient(135deg, var(--accent-bright), var(--neon));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--abyss); }
+  ::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  section { animation: fadeUp 0.5s ease both; }
+  section:nth-child(1){animation-delay:0.05s}
+  section:nth-child(2){animation-delay:0.10s}
+  section:nth-child(3){animation-delay:0.15s}
+  section:nth-child(4){animation-delay:0.20s}
+  section:nth-child(5){animation-delay:0.25s}
+
+  p    { color: var(--text-secondary); line-height: 1.8; font-size: 14px; }
+  h3   { font-family: var(--display); font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 24px 0 12px; }
+  strong { color: var(--text-primary); }
+  code { font-family: var(--mono); font-size: 12px; color: var(--accent-bright); }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav { display: none; }
+    main { padding: 30px 20px 80px; }
+    header { padding: 40px 20px; }
+    h1 { font-size: 32px; }
+    header::before { font-size: 100px; }
+    .gesture-grid { grid-template-columns: repeat(2,1fr); }
+    .platform-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+  <div class="header-tag">Technical Reference</div>
+  <h1>GHOST INTERFACE</h1>
+  <p class="header-sub">A local Flask-based control panel for gesture-driven computer interaction — combining webcam input, MediaPipe hand landmark detection, gesture classification, and OS-level command execution.</p>
+  <div class="header-meta">
+    <span class="badge active">Flask · Python</span>
+    <span class="badge">v1.0</span>
+    <span class="badge">127.0.0.1:5000</span>
+    <span class="badge warn">⚠ Local only — No auth</span>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ═══ SIDEBAR ═══ -->
+<nav>
+  <div class="nav-section">
+    <div class="nav-label">General</div>
+    <a href="#overview"  onclick="setActive(this)"><span class="method-dot"></span> Overview</a>
+    <a href="#base-url"  onclick="setActive(this)"><span class="method-dot neon"></span> Base URL</a>
+    <a href="#auth"      onclick="setActive(this)"><span class="method-dot" style="background:var(--danger)"></span> Authentication</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Endpoints</div>
+    <a href="#ep-root"   onclick="setActive(this)"><span class="method-dot neon"></span> GET /</a>
+    <a href="#ep-feed"   onclick="setActive(this)"><span class="method-dot neon"></span> GET /video_feed</a>
+    <a href="#ep-status" onclick="setActive(this)"><span class="method-dot neon"></span> GET /api/status</a>
+    <a href="#ep-camera" onclick="setActive(this)"><span class="method-dot neon"></span> GET /api/camera/status</a>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Technical Details</div>
+    <a href="#gestures"  onclick="setActive(this)"><span class="method-dot" style="background:var(--warn)"></span> Gestures</a>
+    <a href="#config"    onclick="setActive(this)"><span class="method-dot"></span> Configuration</a>
+    <a href="#platform"  onclick="setActive(this)"><span class="method-dot"></span> Platform Behavior</a>
+    <a href="#errors"    onclick="setActive(this)"><span class="method-dot" style="background:var(--danger)"></span> Error Handling</a>
+    <a href="#future"    onclick="setActive(this)"><span class="method-dot" style="background:var(--success)"></span> Future Additions</a>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main>
+
+  <!-- 01 OVERVIEW -->
+  <section id="overview">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Overview</h2>
+    </div>
+    <p>GHOST INTERFACE is a local control panel that combines <strong>webcam input</strong>, <strong>MediaPipe hand landmark detection</strong>, gesture classification, and system command execution. The public API is intentionally small — it serves a web dashboard, streams the annotated camera feed as MJPEG, exposes the latest detected gesture, and checks camera availability.</p>
+
+    <div style="margin-top:24px">
+      <div class="code-label">Processing Pipeline</div>
+      <div class="pipeline">
+        <div class="pipe-step">Camera Frame</div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">HandDetector</div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">GestureEngine</div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">CommandHandler</div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step" style="border-color:var(--accent-dim);color:var(--accent-bright)">Event Log</div>
+      </div>
+    </div>
+
+    <h3>Source Map</h3>
+    <table class="data-table">
+      <thead><tr><th>File</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td>web_app.py</td><td>Flask routes and shared API state</td></tr>
+        <tr><td>camera_stream.py</td><td>Camera frame generation and MJPEG output</td></tr>
+        <tr><td>hand_detector.py</td><td>MediaPipe hand landmark detection</td></tr>
+        <tr><td>gesture_engine.py</td><td>Gesture classification</td></tr>
+        <tr><td>command_handler.py</td><td>Gesture-to-command execution</td></tr>
+        <tr><td>config.json</td><td>Runtime gesture-to-command mappings</td></tr>
+        <tr><td>templates/index.html</td><td>Dashboard template</td></tr>
+        <tr><td>static/js/main.js</td><td>Frontend API polling</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 02 BASE URL -->
+  <section id="base-url">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Base URL</h2>
+    </div>
+    <p>The server runs locally and is started from <code>web_app.py</code>.</p>
+
+    <div class="url-bar">
+      <span class="protocol">http://</span>
+      <span class="host">127.0.0.1</span>
+      <span class="port">:5000</span>
+    </div>
+
+    <div class="code-label">Start the server</div>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">COPY</button><span style="color:var(--text-muted)"># Install dependencies</span>
+pip install -r requirements.txt
+
+<span style="color:var(--text-muted)"># Start server</span>
+python web_app.py
+
+<span style="color:var(--text-muted)"># Run tests</span>
+pytest</div>
+
+    <table class="data-table" style="margin-top:20px">
+      <thead><tr><th>Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>Host</td><td><span style="color:var(--neon);font-family:var(--mono)">127.0.0.1</span></td></tr>
+        <tr><td>Port</td><td><span style="color:var(--neon);font-family:var(--mono)">5000</span></td></tr>
+        <tr><td>Debug mode</td><td><span style="color:var(--danger);font-family:var(--mono)">false</span></td></tr>
+        <tr><td>Reloader</td><td><span style="color:var(--danger);font-family:var(--mono)">false</span></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 03 AUTH -->
+  <section id="auth">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Authentication</h2>
+    </div>
+    <div class="info-box danger">
+      <span class="info-icon">⚠</span>
+      <span><strong>No authentication is implemented.</strong> Because the application can execute local OS-level commands (mouse movement, clicks, volume, keyboard shortcuts), it must only be exposed on a trusted local machine. Do not bind it to a public network interface without adding authentication and command-safety controls.</span>
+    </div>
+
+    <h3>Content Types</h3>
+    <table class="data-table">
+      <thead><tr><th>Resource</th><th>Content-Type</th></tr></thead>
+      <tbody>
+        <tr><td>Dashboard page</td><td><code>text/html</code></td></tr>
+        <tr><td>API responses</td><td><code>application/json</code></td></tr>
+        <tr><td>Camera stream</td><td><code>multipart/x-mixed-replace; boundary=frame</code></td></tr>
+        <tr><td>Stream frames</td><td><code>image/jpeg</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 04 ENDPOINTS -->
+  <section id="ep-root">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Endpoints</h2>
+    </div>
+
+    <!-- GET / -->
+    <div class="endpoint open" id="end1">
+      <div class="endpoint-header" onclick="toggleEndpoint('end1')">
+        <span class="method-tag method-get">GET</span>
+        <span class="endpoint-path">/</span>
+        <span class="endpoint-desc">Main dashboard</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Returns the main GHOST INTERFACE dashboard page. The dashboard lets a user select a local document or image, start the gesture interface, view the live camera feed, and see detected gesture feedback.</p>
+
+        <div class="code-label">Request</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">COPY</button>GET http://127.0.0.1:5000/</div>
+
+        <div class="code-label">Response</div>
+        <div class="code-block">200 OK
+Content-Type: text/html</div>
+
+        <div class="code-label">cURL</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">COPY</button>curl http://127.0.0.1:5000/</div>
+
+        <div class="info-box info">
+          <span class="info-icon">ℹ</span>
+          <span>The page loads <code>static/css/style.css</code> and <code>static/js/main.js</code>. The frontend creates an <code>&lt;img src="/video_feed"&gt;</code> element and polls <code>/api/status</code> every <strong>500 ms</strong>.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET /video_feed -->
+    <div class="endpoint" id="end2" style="scroll-margin-top:40px">
+      <div class="endpoint-header" onclick="toggleEndpoint('end2')">
+        <span class="method-tag method-get">GET</span>
+        <span class="endpoint-path">/video_feed</span>
+        <span class="endpoint-desc">Live MJPEG camera stream</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="endpoint-body">
+        <p>Streams annotated webcam frames as MJPEG. Each request opens a new <code>CameraStream</code>, reads frames from camera index <code>0</code>, detects hand landmarks, draws overlays, updates the latest gesture state, and yields JPEG frames in a multipart response.</p>
+
+        <div class="code-label">Recommended HTML Usage</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">COPY</button>&lt;img src="/video_feed" alt="Live camera feed"&gt;</div>
+
+        <div class="code-label">Response format — each part</div>
+        <div class="code-block">--frame
+Content-Type: image/jpeg
+
+&lt;jpeg-bytes&gt;</div>
+
+        <div class="info-box warn">
+          <span class="info-icon">⚠</span>
+          <span>While the stream is active, the server <strong>may execute OS commands</strong> when a recognized gesture passes its cooldown check. If <code>/video_feed</code> is not being consumed, gesture detection does not run.</span>
+        </div>
+        <div class="info-box success">
+          <span class="info-icon">✓</span>
+          <span>If the webcam cannot be opened, a fallback JPEG frame containing a camera-not-found message is returned instead of crashing the route.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET /api/status -->
+    <div class="endpoint" id="ep-status" style="scroll-margin-top:40px">
+      <div class="endpoint-header" onclick="toggleEndpoint('end3')">
+        <span class="method-tag method-get">GET</span>
+        <span class="endpoint-path">/api/status</span>
+        <span class="endpoint-desc">Latest gesture + event log</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="endpoint-body" id="end3" style="display:block">
+        <p>Returns the latest detected gesture name and a recent event log. The frontend uses this endpoint to update the "Last Gesture" panel every 500 ms.</p>
+
+        <div class="code-label">Request</div>
+        <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">COPY</button>GET http://127.0.0.1:5000/api/status</div>
+
+        <div class="demo-box">
+          <div class="demo-label"><span class="blink">●</span> Example response</div>
+          <div class="code-block" style="margin:0">{
+  <span class="token-key">"gesture"</span>: <span class="token-str">"thumb_up"</span>,
+  <span class="token-key">"log"</span>: [
+    {
+      <span class="token-key">"time"</span>:    <span class="token-str">"16:41:20"</span>,
+      <span class="token-key">"gesture"</span>: <span class="token-str">"thumb_up"</span>
+    },
+    {
+      <span class="token-key">"time"</span>:    <span class="token-str">"16:41:13"</span>,
+      <span class="token-key">"gesture"</span>: <span class="token-str">"open_palm"</span>
+    }
+  ]
+}</div>
+        </div>
+
+        <table class="data-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>gesture</td><td><span style="color:var(--warn);font-family:var(--mono);font-size:11px">string</span></td><td>Latest detected gesture. Defaults to <code>unknown</code> before any gesture is detected.</td></tr>
+            <tr><td>log</td><td><span style="color:var(--warn);font-family:var(--mono);font-size:11px">array</span></td><td>Most recent 15 gesture execution events, newest first.</td></tr>
+            <tr><td>log[].time</td><td><span style="color:var(--warn);font-family:var(--mono);font-size:11px">string</span></td><td>Local server time in <code>HH:MM:SS</code> format.</td></tr>
+            <tr><td>log[].gesture</td><td><span style="color:var(--warn);font-family:var(--mono);font-size:11px">string</span></td><td>Gesture name that triggered a command.</td></tr>
+          </tbody>
+        </table>
+
+        <div class="info-box info">
+          <span class="info-icon">ℹ</span>
+          <span>The server stores up to <strong>30</strong> gesture events internally; the API returns the latest <strong>15</strong>, reversed so the newest appears first. State resets on Flask process restart.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GET /api/camera/status -->
+    <div class="endpoint" id="ep-camera" style="scroll-margin-top:40px">
+      <div class="endpoint-header" onclick="toggleEndpoint('end4')">
+        <span class="method-tag method-get">GET</span>
+        <span class="endpoint-path">/api/camera/status</span>
+        <span class="endpoint-desc">Check camera availability</span>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="endpoint-body" id="end4">
+        <p>Checks whether camera index <code>0</code> can be opened. Creates a short-lived OpenCV <code>VideoCapture</code>, calls <code>isOpened()</code>, releases it, and returns the result.</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0">
+          <div>
+            <div class="code-label">Camera available ✓</div>
+            <div class="code-block" style="margin:0">{
+  <span class="token-key">"ok"</span>: <span class="token-bool">true</span>
+}</div>
+          </div>
+          <div>
+            <div class="code-label">Camera unavailable ✗</div>
+            <div class="code-block" style="margin:0">{
+  <span class="token-key">"ok"</span>: <span class="token-bool">false</span>
+}</div>
+          </div>
+        </div>
+
+        <div class="info-box info">
+          <span class="info-icon">ℹ</span>
+          <span>Call this endpoint before starting a session to warn users about camera availability before they load <code>/video_feed</code>.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 GESTURES -->
+  <section id="gestures">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Supported Gestures</h2>
+    </div>
+    <p>The gesture engine recognizes the following states and maps them to OS commands. The cooldown timer shown prevents repeated high-frequency triggers from continuous video frames.</p>
+
+    <div class="gesture-grid" style="margin-top:20px">
+      <div class="gesture-card">
+        <div class="gesture-emoji">🖐</div>
+        <div class="gesture-name">open_palm</div>
+        <div class="gesture-cmd">Move mouse</div>
+        <div class="gesture-cooldown">0 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">✊</div>
+        <div class="gesture-name">fist</div>
+        <div class="gesture-cmd">Left click</div>
+        <div class="gesture-cooldown">0.5 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">👍</div>
+        <div class="gesture-name">thumb_up</div>
+        <div class="gesture-cmd">Volume up</div>
+        <div class="gesture-cooldown">0.8 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">👎</div>
+        <div class="gesture-name">thumb_down</div>
+        <div class="gesture-cmd">Volume down</div>
+        <div class="gesture-cooldown">0.8 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">🤏</div>
+        <div class="gesture-name">pinch_out</div>
+        <div class="gesture-cmd">Zoom in (Ctrl +)</div>
+        <div class="gesture-cooldown">0.8 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">🤏</div>
+        <div class="gesture-name">pinch_in</div>
+        <div class="gesture-cmd">Zoom out (Ctrl −)</div>
+        <div class="gesture-cooldown">0.8 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">☝</div>
+        <div class="gesture-name">pointing_up</div>
+        <div class="gesture-cmd">Left click</div>
+        <div class="gesture-cooldown">0.5 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">👉</div>
+        <div class="gesture-name">swipe_right</div>
+        <div class="gesture-cmd">Next page →</div>
+        <div class="gesture-cooldown">0.8 s</div>
+      </div>
+      <div class="gesture-card">
+        <div class="gesture-emoji">👈</div>
+        <div class="gesture-name">swipe_left</div>
+        <div class="gesture-cmd">Prev page ←</div>
+        <div class="gesture-cooldown">0.8 s</div>
+      </div>
+      <div class="gesture-card" style="border-color:rgba(255,56,100,0.15)">
+        <div class="gesture-emoji">❓</div>
+        <div class="gesture-name" style="color:var(--text-muted)">unknown</div>
+        <div class="gesture-cmd" style="color:var(--text-muted)">No command</div>
+        <div class="gesture-cooldown" style="color:var(--text-muted)">—</div>
+      </div>
+    </div>
+
+    <h3>Internal: GestureEngine Result Contract</h3>
+    <div class="code-block">{
+  <span class="token-key">"gesture"</span>:    <span class="token-str">"open_palm"</span>,
+  <span class="token-key">"confidence"</span>: <span class="token-num">1.0</span>,
+  <span class="token-key">"hand_coords"</span>: {
+    <span class="token-key">"x"</span>: <span class="token-num">0.45</span>,
+    <span class="token-key">"y"</span>: <span class="token-num">0.30</span>
+  }
+}</div>
+    <p style="margin-top:8px;font-size:12px">No-landmark result returns <code style="color:var(--neon)">"unknown"</code>, confidence <code style="color:var(--neon)">0.0</code>, and <code style="color:var(--neon)">null</code> for <code>hand_coords</code>.</p>
+  </section>
+
+  <!-- 06 CONFIG -->
+  <section id="config">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Configuration</h2>
+    </div>
+    <p>Gesture-to-command behavior is controlled by <code>config.json</code> at the project root.</p>
+
+    <div class="code-label">config.json — current defaults</div>
+    <div class="code-block"><button class="copy-btn" onclick="copyCode(this)">COPY</button>{
+  <span class="token-key">"gestures"</span>: {
+    <span class="token-key">"open_palm"</span>:   <span class="token-str">"mouse_move"</span>,
+    <span class="token-key">"fist"</span>:        <span class="token-str">"left_click"</span>,
+    <span class="token-key">"thumb_up"</span>:    <span class="token-str">"volume_up"</span>,
+    <span class="token-key">"thumb_down"</span>:  <span class="token-str">"volume_down"</span>,
+    <span class="token-key">"pinch_out"</span>:   <span class="token-str">"zoom_in"</span>,
+    <span class="token-key">"pinch_in"</span>:    <span class="token-str">"zoom_out"</span>,
+    <span class="token-key">"pointing_up"</span>: <span class="token-str">"left_click"</span>,
+    <span class="token-key">"swipe_right"</span>: <span class="token-str">"next_page"</span>,
+    <span class="token-key">"swipe_left"</span>:  <span class="token-str">"prev_page"</span>
+  },
+  <span class="token-key">"app_to_open"</span>:  <span class="token-str">"notepad"</span>,
+  <span class="token-key">"volume_step"</span>:  <span class="token-num">5</span>,
+  <span class="token-key">"zoom_step"</span>:    <span class="token-num">0.1</span>
+}</div>
+
+    <h3>Supported Commands</h3>
+    <table class="data-table">
+      <thead><tr><th>Command</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td>mouse_move</td><td>Moves the mouse to normalized hand coordinates.</td></tr>
+        <tr><td>left_click</td><td>Performs a left mouse click via pyautogui.</td></tr>
+        <tr><td>volume_up</td><td>Increases system volume by <code>volume_step</code>.</td></tr>
+        <tr><td>volume_down</td><td>Decreases system volume by <code>volume_step</code>.</td></tr>
+        <tr><td>zoom_in</td><td>Sends <code>Ctrl + +</code>.</td></tr>
+        <tr><td>zoom_out</td><td>Sends <code>Ctrl + −</code>.</td></tr>
+        <tr><td>next_page</td><td>Sends the right-arrow key.</td></tr>
+        <tr><td>prev_page</td><td>Sends the left-arrow key.</td></tr>
+        <tr><td>open_app</td><td>Opens the configured application (not mapped to any gesture by default).</td></tr>
+      </tbody>
+    </table>
+
+    <div class="info-box warn">
+      <span class="info-icon">⚠</span>
+      <span><code>open_app</code> exists in <code>CommandHandler</code> but is not mapped to any gesture in the current <code>config.json</code>.</span>
+    </div>
+  </section>
+
+  <!-- 07 PLATFORM -->
+  <section id="platform">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <h2 class="section-title">Platform Behavior</h2>
+    </div>
+    <p>Some commands behave differently depending on the host OS.</p>
+
+    <div class="platform-grid" style="margin-top:20px">
+      <div class="platform-card">
+        <div class="platform-name win">Windows</div>
+        <div class="platform-cmd">volume: keyboard.send()<br>open_app: subprocess.Popen(shell=True)<br>mouse / zoom: pyautogui</div>
+      </div>
+      <div class="platform-card">
+        <div class="platform-name linux">Linux</div>
+        <div class="platform-cmd">volume: amixer -D pulse sset Master<br>open_app: subprocess.Popen([])<br>mouse / zoom: pyautogui</div>
+      </div>
+      <div class="platform-card">
+        <div class="platform-name mac">macOS</div>
+        <div class="platform-cmd">volume: osascript volume cmd<br>open_app: open -a &lt;app&gt;<br>mouse / zoom: pyautogui</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 ERRORS -->
+  <section id="errors">
+    <div class="section-header">
+      <span class="section-num">08</span>
+      <h2 class="section-title">Error Handling</h2>
+    </div>
+    <table class="data-table">
+      <thead><tr><th>Scenario</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr><td>config.json missing</td><td>Falls back to empty gesture mappings, <code>notepad</code>, <code>volume_step=5</code>, <code>zoom_step=0.1</code>.</td></tr>
+        <tr><td>config.json invalid JSON</td><td>Same fallback defaults as above.</td></tr>
+        <tr><td>Unknown gesture</td><td>Silently ignored — no exception raised.</td></tr>
+        <tr><td>Missing hand coords (mouse move)</td><td>Mouse movement is skipped.</td></tr>
+        <tr><td>Webcam fails in /video_feed</td><td>Returns a generated fallback JPEG frame.</td></tr>
+        <tr><td>Webcam fails in /api/camera/status</td><td>Returns <code>{"ok": false}</code>.</td></tr>
+        <tr><td>Command execution error</td><td>Logged by <code>CommandHandler</code>; server route continues running.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 09 FUTURE -->
+  <section id="future">
+    <div class="section-header">
+      <span class="section-num">09</span>
+      <h2 class="section-title">Recommended Future Additions</h2>
+    </div>
+    <p>These additions would make the API easier to operate and test without changing the current public behavior.</p>
+
+    <div style="margin-top:20px;display:grid;gap:12px">
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span class="method-tag method-get">GET</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text-primary)">/api/config</span>
+        </div>
+        <p>Return the currently active gesture-to-command mappings and settings.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span class="method-tag method-put">PUT</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text-primary)">/api/config</span>
+        </div>
+        <p>Update gesture mappings and settings safely at runtime without restarting the server.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span class="method-tag method-post">POST</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text-primary)">/api/commands/test</span>
+        </div>
+        <p>Trigger a named command in a controlled test mode without requiring an active video stream.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span class="method-tag method-get">GET</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text-primary)">/api/stream/status</span>
+        </div>
+        <p>Return FPS, frame count, landmark count, and stream running state.</p>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <span class="method-tag method-post">POST</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--text-primary)">/api/session/start &nbsp;·&nbsp; /api/session/stop</span>
+        </div>
+        <p>Start and stop detection independently from the browser image stream and release camera resources explicitly.</p>
+      </div>
+    </div>
+
+    <div class="info-box warn" style="margin-top:28px">
+      <span class="info-icon">⚠</span>
+      <div>
+        <strong>Current API Limitations</strong>
+        <ul style="margin-top:10px;padding-left:20px;font-size:13px;line-height:2.2">
+          <li>No authentication or authorization</li>
+          <li>No POST endpoints for runtime configuration changes</li>
+          <li>Video stream is locked to camera index <code>0</code></li>
+          <li>Status API does not expose FPS, landmark count, or stream health</li>
+          <li>Gesture detection only runs while <code>/video_feed</code> is being consumed</li>
+          <li>In-memory state resets on every Flask process restart</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+
+<footer>
+  <div class="footer-logo">GHOST INTERFACE</div>
+  <div>API DOCUMENTATION — v1.0</div>
+  <div>Flask · MediaPipe · Python</div>
+</footer>
+
+<script>
+  function toggleEndpoint(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+
+  function setActive(el) {
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function copyCode(btn) {
+    const block = btn.parentElement;
+    const clone = block.cloneNode(true);
+    clone.querySelector('.copy-btn')?.remove();
+    const text = clone.innerText.trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'COPIED';
+      btn.style.color = 'var(--success)';
+      btn.style.borderColor = 'rgba(0,255,153,0.3)';
+      setTimeout(() => {
+        btn.textContent = 'COPY';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }, 1800);
+    });
+  }
+
+  // Active nav on scroll
+  const sections = document.querySelectorAll('section[id]');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 90) current = s.id;
+    });
+    document.querySelectorAll('nav a').forEach(a => {
+      a.classList.remove('active');
+      const href = a.getAttribute('href')?.replace('#', '');
+      if (href === current) a.classList.add('active');
+    });
+  });
+
+  // Fix ep-status / ep-camera endpoints (non-standard id setup)
+  document.querySelectorAll('.endpoint-header').forEach(h => {
+    if (!h.getAttribute('onclick')) return;
+    const id = h.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+    if (id) {
+      const body = document.getElementById(id);
+      const wrapper = h.parentElement;
+      if (body && !wrapper.id) wrapper.id = id + '_wrap';
+      h.addEventListener('click', () => {
+        if (!body) return;
+        const isOpen = body.style.display !== 'none' && body.style.display !== '';
+        body.style.display = isOpen ? 'none' : 'block';
+        h.querySelector('.chevron').style.transform = isOpen ? '' : 'rotate(180deg)';
+        h.style.background = isOpen ? '' : 'var(--surface)';
+        h.style.borderBottomColor = isOpen ? 'transparent' : 'var(--border)';
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
